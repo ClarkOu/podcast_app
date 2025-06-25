@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node src/test.js"
+    "test": "node src/basic-test.js",
+    "test:full": "node src/test.js"
   },
   "dependencies": {
     "axios": "^1.6.0",
