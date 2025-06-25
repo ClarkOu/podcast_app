@@ -1,5 +1,8 @@
 # 火山方舟语音合成播客生成器
 
+[![Build Status](https://github.com/ClarkOu/podcast_app/actions/workflows/deploy.yml/badge.svg)](https://github.com/ClarkOu/podcast_app/actions)
+[![Docker](https://img.shields.io/docker/v/clarkou/podcast_app?label=Docker)](https://hub.docker.com/r/clarkou/podcast_app)
+
 基于豆包火山方舟TTS的智能播客生成平台，支持AI内容生成和语音合成。
 
 ## 功能特性
@@ -48,6 +51,11 @@ npm start
 ### 4. 访问应用
 
 - **主页**: http://localhost:3002 - TTS测试界面
+- **播客制作**: http://localhost:3002/new-podcast.html - 智能播客生成页面
+
+## 🎯 最新更新
+- ✅ 已配置GitHub Actions自动化部署
+- ✅ 已配置Docker Hub镜像自动构建
 - **播客生成器**: http://localhost:3002/podcast.html - 播客生成界面
 
 ### 5. 测试功能
