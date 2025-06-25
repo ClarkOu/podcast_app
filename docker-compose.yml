@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  podcast-app:
+    image: clarkou/podcast_app:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # 将环境变量从.env文件传递给容器
+      - VOLCENGINE_TTS_APP_ID=${VOLCENGINE_TTS_APP_ID}
+      - VOLCENGINE_TTS_ACCESS_TOKEN=${VOLCENGINE_TTS_ACCESS_TOKEN}
+      - VOLCENGINE_TTS_CLUSTER=${VOLCENGINE_TTS_CLUSTER}
+      - VOLCENGINE_TTS_VOICE_TYPE=${VOLCENGINE_TTS_VOICE_TYPE}
+      - VOLCENGINE_TTS_SECRET_KEY=${VOLCENGINE_TTS_SECRET_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL}
+    volumes:
+      # 持久化输出目录
+      - ./output:/app/output
+      - ./temp:/app/temp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/test"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

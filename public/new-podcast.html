@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI播客生成器 - 两步式流程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ff6b6b;
+        }
+        
+        .step.active {
+            border-left-color: #28a745;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.1);
+        }
+        
+        .step.completed {
+            border-left-color: #6c757d;
+            opacity: 0.8;
+        }
+        
+        .step h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+        
+        .script-preview {
+            margin-top: 30px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            animation: slideDown 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .script-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .script-header h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .script-meta {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .script-content {
+            background: white;
+            position: relative;
+        }
+        
+        .script-content textarea {
+            border: none;
+            padding: 25px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            resize: vertical;
+            min-height: 400px;
+            background: transparent;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .script-content textarea:focus {
+            outline: none;
+            background: #fafbfc;
+        }
+        
+        .script-streaming {
+            padding: 25px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            min-height: 400px;
+            background: white;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .script-streaming .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 20px;
+            background: #007bff;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .script-actions {
+            padding: 20px 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .script-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .script-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .ai-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .ai-status.enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .ai-status.disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .help-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .step-number.active {
+            background: #ff6b6b;
+        }
+        
+        .step-number.completed {
+            background: #28a745;
+        }
+        
+        .dialogue-settings {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .dialogue-preview {
+            margin-top: 20px;
+        }
+        
+        .dialogue-hostA {
+            background: linear-gradient(135deg, #e3f2fd, #f1f8ff);
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        
+        .dialogue-hostB {
+            background: linear-gradient(135deg, #f3e5f5, #faf2ff);
+            border-left: 4px solid #9c27b0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        
+        .speaker-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .speaker-content {
+            line-height: 1.6;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ AI播客生成器</h1>
+            <p>智能两步式播客创作工具</p>
+        </div>
+        
+        <div class="content">
+            <!-- 第一步：生成脚本 -->
+            <div class="step active" id="step1">
+                <div class="step-indicator">
+                    <div class="step-number active">1</div>
+                    <h3>📝 生成播客脚本</h3>
+                </div>
+                
+                <div class="form-group">
+                    <label for="topic">播客主题 *</label>
+                    <input type="text" id="topic" placeholder="请输入播客主题，例如：人工智能的发展趋势">
+                </div>
+                
+                <div class="form-group">
+                    <label for="podcastMode">播客模式</label>
+                    <select id="podcastMode" onchange="togglePodcastMode()">
+                        <option value="single">单人播客</option>
+                        <option value="dialogue">双人互动</option>
+                    </select>
+                    <div class="help-text">选择单人叙述或双人对话形式的播客</div>
+                </div>
+                
+                <!-- 双人模式设置（默认隐藏） -->
+                <div id="dialogueSettings" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hostARole">主持人A角色</label>
+                            <select id="hostARole">
+                                <option value="主持人">主持人</option>
+                                <option value="专家">专家学者</option>
+                                <option value="采访者">采访者</option>
+                                <option value="讲述者">讲述者</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hostBRole">主持人B角色</label>
+                            <select id="hostBRole">
+                                <option value="嘉宾">嘉宾</option>
+                                <option value="讨论伙伴">讨论伙伴</option>
+                                <option value="提问者">提问者</option>
+                                <option value="解说员">解说员</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="voiceA">主持人A音色</label>
+                            <select id="voiceA">
+                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
+                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
+                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
+                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="voiceB">主持人B音色</label>
+                            <select id="voiceB">
+                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
+                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
+                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
+                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="useAI" style="width: auto; margin-right: 10px;">
+                        使用AI生成内容
+                    </label>
+                    <div id="aiStatusDiv" class="ai-status disabled">
+                        正在检查AI配置...
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="style">播客风格</label>
+                        <select id="style">
+                            <option value="informative">信息性</option>
+                            <option value="conversational">对话式</option>
+                            <option value="educational">教育性</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">播客时长</label>
+                        <select id="duration">
+                            <option value="short">短篇 (2-3分钟)</option>
+                            <option value="medium" selected>中篇 (5-8分钟)</option>
+                            <option value="long">长篇 (10-15分钟)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="segments">内容段落数量</label>
+                    <input type="number" id="segments" value="3" min="1" max="8">
+                </div>
+                
+                <button class="btn" onclick="generateScript()" id="generateScriptBtn">
+                    <span>📝</span>生成脚本
+                </button>
+                
+                <div id="scriptStatus"></div>
+                
+                <div id="scriptPreview" class="script-preview" style="display: none;">
+                    <div class="script-header">
+                        <h4>
+                            <span>📄</span>
+                            <span>播客脚本预览</span>
+                            <span id="streamingIndicator" style="display: none;">
+                                <span class="loading-spinner"></span>
+                                <small style="margin-left: 10px; color: #007bff;">AI正在生成中...</small>
+                            </span>
+                        </h4>
+                        <div class="script-meta" id="scriptMeta"></div>
+                    </div>
+                    
+                    <div class="script-content">
+                        <div id="scriptStreaming" class="script-streaming" style="display: none;"></div>
+                        <textarea id="scriptTextarea" placeholder="脚本内容将在这里显示..." style="display: none;"></textarea>
+                    </div>
+                    
+                    <div class="script-actions">
+                        <div class="script-info" id="scriptInfo"></div>
+                        <div class="script-buttons">
+                            <button class="btn btn-secondary" onclick="editScript()">
+                                <span>✏️</span>编辑脚本
+                            </button>
+                            <button class="btn" onclick="proceedToStep2()">
+                                <span>➡️</span>下一步：合成音频
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二步：合成音频 -->
+            <div class="step" id="step2" style="display: none;">
+                <div class="step-indicator">
+                    <div class="step-number completed">1</div>
+                    <div class="step-number active">2</div>
+                    <h3>🎵 合成音频</h3>
+                </div>
+                
+                <div class="form-row">
+                    <!-- 单人模式音色选择 -->
+                    <div id="singleVoiceSettings">
+                        <div class="form-group">
+                            <label for="voiceType">音色选择</label>
+                            <select id="voiceType">
+                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
+                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
+                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
+                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 双人模式音色选择 -->
+                    <div id="dialogueVoiceSettings" style="display: none;">
+                        <div class="form-group">
+                            <label for="voiceTypeA">主持人A音色</label>
+                            <select id="voiceTypeA">
+                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
+                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
+                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
+                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="voiceTypeB">主持人B音色</label>
+                            <select id="voiceTypeB">
+                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
+                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
+                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
+                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="speedRatio">语速: <span id="speedValue">1.0</span></label>
+                        <input type="range" id="speedRatio" min="0.8" max="2.0" step="0.1" value="1.0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="volumeRatio">音量: <span id="volumeValue">1.0</span></label>
+                        <input type="range" id="volumeRatio" min="0.5" max="2.0" step="0.1" value="1.0">
+                    </div>
+                </div>
+                
+                <div class="script-actions">
+                    <button class="btn btn-secondary" onclick="backToStep1()">
+                        <span>⬅️</span>返回修改脚本
+                    </button>
+                    <button class="btn" onclick="synthesizeAudio()" id="synthesizeBtn">
+                        <span>🎵</span>合成音频
+                    </button>
+                </div>
+                
+                <div id="audioStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let aiEnabled = false;
+        let currentScript = '';
+        let currentTopic = '';
+        let currentMetadata = {};
+        let currentPodcastMode = 'single';
+
+        // 页面加载时检查AI配置状态
+        async function checkAIStatus() {
+            try {
+                const response = await fetch('/api/ai/status');
+                const result = await response.json();
+                
+                aiEnabled = result.data.aiEnabled;
+                const aiStatusDiv = document.getElementById('aiStatusDiv');
+                const useAICheckbox = document.getElementById('useAI');
+                
+                if (aiEnabled) {
+                    aiStatusDiv.textContent = `AI功能可用 (模型: ${result.data.model})`;
+                    aiStatusDiv.className = 'ai-status enabled';
+                    useAICheckbox.disabled = false;
+                } else {
+                    aiStatusDiv.textContent = '需要配置OpenRouter API Key以启用AI功能';
+                    aiStatusDiv.className = 'ai-status disabled';
+                    useAICheckbox.disabled = true;
+                    useAICheckbox.checked = false;
+                }
+            } catch (error) {
+                console.error('检查AI状态失败:', error);
+                const aiStatusDiv = document.getElementById('aiStatusDiv');
+                aiStatusDiv.textContent = '检查AI状态失败';
+                aiStatusDiv.className = 'ai-status disabled';
+                document.getElementById('useAI').disabled = true;
+            }
+        }
+
+        // 切换播客模式
+        function togglePodcastMode() {
+            const mode = document.getElementById('podcastMode').value;
+            const dialogueSettings = document.getElementById('dialogueSettings');
+            
+            if (mode === 'dialogue') {
+                dialogueSettings.style.display = 'block';
+                dialogueSettings.className = 'dialogue-settings';
+            } else {
+                dialogueSettings.style.display = 'none';
+            }
+        }
+
+        // 解析双人对话脚本
+        function parseDialogueScript(script) {
+            const lines = script.split('\n');
+            const segments = [];
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('主持人A:') || trimmedLine.startsWith('A:')) {
+                    segments.push({
+                        speaker: 'hostA',
+                        content: trimmedLine.replace(/^(主持人A:|A:)/, '').trim()
+                    });
+                } else if (trimmedLine.startsWith('主持人B:') || trimmedLine.startsWith('B:')) {
+                    segments.push({
+                        speaker: 'hostB',
+                        content: trimmedLine.replace(/^(主持人B:|B:)/, '').trim()
+                    });
+                } else if (trimmedLine.length > 0 && !trimmedLine.startsWith('#') && !trimmedLine.startsWith('##')) {
+                    // 如果没有标记，默认分配给上一个说话者或A
+                    const lastSpeaker = segments.length > 0 ? segments[segments.length - 1].speaker : 'hostA';
+                    if (segments.length > 0 && segments[segments.length - 1].speaker === lastSpeaker) {
+                        segments[segments.length - 1].content += ' ' + trimmedLine;
+                    } else {
+                        segments.push({
+                            speaker: lastSpeaker === 'hostA' ? 'hostB' : 'hostA',
+                            content: trimmedLine
+                        });
+                    }
+                }
+            }
+            
+            return segments;
+        }
+
+        // 渲染双人对话脚本预览
+        function renderDialoguePreview(script) {
+            const segments = parseDialogueScript(script);
+            let html = '';
+            
+            const hostARole = document.getElementById('hostARole').value;
+            const hostBRole = document.getElementById('hostBRole').value;
+            
+            for (const segment of segments) {
+                if (segment.speaker === 'hostA') {
+                    html += `
+                        <div class="dialogue-hostA">
+                            <div class="speaker-label">${hostARole}</div>
+                            <div class="speaker-content">${segment.content}</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="dialogue-hostB">
+                            <div class="speaker-label">${hostBRole}</div>
+                            <div class="speaker-content">${segment.content}</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            return html;
+        }
+
+        // 切换播客模式
+        function togglePodcastMode() {
+            const mode = document.getElementById('podcastMode').value;
+            const dialogueSettings = document.getElementById('dialogueSettings');
+            
+            if (mode === 'dialogue') {
+                dialogueSettings.style.display = 'block';
+            } else {
+                dialogueSettings.style.display = 'none';
+            }
+        }
+
+        // 第一步：生成播客脚本（支持流式输出）
+        async function generateScript() {
+            const btn = document.getElementById('generateScriptBtn');
+            const status = document.getElementById('scriptStatus');
+            const scriptPreview = document.getElementById('scriptPreview');
+            const streamingDiv = document.getElementById('scriptStreaming');
+            const textareaDiv = document.getElementById('scriptTextarea');
+            const streamingIndicator = document.getElementById('streamingIndicator');
+            const scriptMeta = document.getElementById('scriptMeta');
+            const scriptInfo = document.getElementById('scriptInfo');
+            
+            const topic = document.getElementById('topic').value.trim();
+            if (!topic) {
+                status.innerHTML = '<div class="status error">请输入播客主题</div>';
+                return;
+            }
+            
+            const useAI = document.getElementById('useAI').checked && aiEnabled;
+            const podcastMode = document.getElementById('podcastMode').value;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>生成中...';
+            scriptPreview.style.display = 'none';
+            
+            const params = {
+                topic: topic,
+                style: document.getElementById('style').value,
+                duration: document.getElementById('duration').value,
+                segments: parseInt(document.getElementById('segments').value),
+                useAI: useAI,
+                podcastMode: podcastMode
+            };
+            
+            // 如果是双人模式，添加角色信息
+            if (podcastMode === 'dialogue') {
+                params.hostARole = document.getElementById('hostARole').value;
+                params.hostBRole = document.getElementById('hostBRole').value;
+                params.voiceA = document.getElementById('voiceA').value;
+                params.voiceB = document.getElementById('voiceB').value;
+            }
+            
+            // 如果使用AI，则使用流式API
+            if (useAI) {
+                try {
+                    status.innerHTML = '<div class="status loading">正在使用AI生成播客脚本，请稍候...</div>';
+                    
+                    // 显示脚本预览区域
+                    scriptPreview.style.display = 'block';
+                    streamingDiv.style.display = 'block';
+                    textareaDiv.style.display = 'none';
+                    streamingIndicator.style.display = 'inline-flex';
+                    
+                    // 设置元数据
+                    scriptMeta.innerHTML = `
+                        <strong>主题:</strong> ${topic} |
+                        <strong>风格:</strong> ${document.getElementById('style').options[document.getElementById('style').selectedIndex].text} |
+                        <strong>时长:</strong> ${document.getElementById('duration').options[document.getElementById('duration').selectedIndex].text} |
+                        <strong>生成方式:</strong> AI生成
+                    `;
+                    
+                    streamingDiv.innerHTML = '';
+                    let fullScript = '';
+                    
+                    const response = await fetch('/api/podcast/generate-script-stream', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(params)
+                    });
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    
+                                    if (data.type === 'chunk') {
+                                        fullScript += data.content;
+                                        streamingDiv.innerHTML = fullScript + '<span class="typing-cursor"></span>';
+                                        streamingDiv.scrollTop = streamingDiv.scrollHeight;
+                                    } else if (data.type === 'complete') {
+                                        // 流式输出完成
+                                        streamingIndicator.style.display = 'none';
+                                        
+                                        // 根据模式选择不同的显示方式
+                                        if (podcastMode === 'dialogue') {
+                                            // 双人对话模式：使用特殊预览格式
+                                            streamingDiv.innerHTML = renderDialoguePreview(data.data.script);
+                                            
+                                            // 延迟后切换到编辑模式
+                                            setTimeout(() => {
+                                                streamingDiv.style.display = 'none';
+                                                textareaDiv.style.display = 'block';
+                                                textareaDiv.value = data.data.script;
+                                            }, 2000);
+                                        } else {
+                                            // 单人模式：正常显示
+                                            streamingDiv.innerHTML = data.data.script;
+                                            
+                                            setTimeout(() => {
+                                                streamingDiv.style.display = 'none';
+                                                textareaDiv.style.display = 'block';
+                                                textareaDiv.value = data.data.script;
+                                            }, 1000);
+                                        }
+                                        
+                                        // 保存数据
+                                        currentScript = data.data.script;
+                                        currentTopic = topic;
+                                        currentMetadata = data.data.metadata;
+                                        currentPodcastMode = podcastMode;
+                                        
+                                        scriptInfo.innerHTML = `字数: ${data.data.script.length} | 段落: ${data.data.segments.length}个`;
+                                        
+                                        status.innerHTML = `
+                                            <div class="status success">
+                                                <span>✅</span>AI脚本生成成功！
+                                                <br><small>预估时长: ${data.data.metadata.estimatedLength}</small>
+                                                <br><small style="color: #28a745;">请检查脚本内容，确认无误后点击"下一步"</small>
+                                            </div>
+                                        `;
+                                        break;
+                                    } else if (data.type === 'error') {
+                                        throw new Error(data.error);
+                                    }
+                                } catch (e) {
+                                    console.error('解析SSE数据失败:', e);
+                                }
+                            }
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('流式脚本生成错误:', error);
+                    status.innerHTML = `<div class="status error">AI生成失败：${error.message}</div>`;
+                    streamingIndicator.style.display = 'none';
+                    scriptPreview.style.display = 'none';
+                }
+            } else {
+                // 使用传统API
+                try {
+                    status.innerHTML = '<div class="status loading">正在生成播客脚本，请稍候...</div>';
+                    
+                    const response = await fetch('/api/podcast/generate-script', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(params)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const scriptData = result.data;
+                        
+                        // 显示脚本预览
+                        scriptPreview.style.display = 'block';
+                        streamingDiv.style.display = 'none';
+                        textareaDiv.style.display = 'block';
+                        textareaDiv.value = scriptData.script;
+                        
+                        // 设置元数据
+                        scriptMeta.innerHTML = `
+                            <strong>主题:</strong> ${topic} |
+                            <strong>风格:</strong> ${document.getElementById('style').options[document.getElementById('style').selectedIndex].text} |
+                            <strong>时长:</strong> ${document.getElementById('duration').options[document.getElementById('duration').selectedIndex].text} |
+                            <strong>生成方式:</strong> 模板生成
+                        `;
+                        
+                        scriptInfo.innerHTML = `字数: ${scriptData.script.length} | 段落: ${scriptData.segments.length}个`;
+                        
+                        // 保存数据
+                        currentScript = scriptData.script;
+                        currentTopic = topic;
+                        currentMetadata = scriptData.metadata;
+                        currentPodcastMode = podcastMode;
+                        
+                        status.innerHTML = `
+                            <div class="status success">
+                                <span>✅</span>脚本生成成功！
+                                <br><small>预估时长: ${scriptData.metadata.estimatedLength}</small>
+                                <br><small style="color: #28a745;">请检查脚本内容，确认无误后点击"下一步"</small>
+                            </div>
+                        `;
+                    } else {
+                        status.innerHTML = `<div class="status error">脚本生成失败：${result.error}</div>`;
+                    }
+                } catch (error) {
+                    console.error('脚本生成错误:', error);
+                    status.innerHTML = `<div class="status error">网络错误：${error.message}</div>`;
+                }
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<span>📝</span>生成脚本';
+        }
+        
+        // 编辑脚本
+        function editScript() {
+            const textarea = document.getElementById('scriptTextarea');
+            textarea.readOnly = false;
+            textarea.focus();
+            textarea.style.border = '2px solid #007bff';
+            
+            textarea.addEventListener('blur', function() {
+                currentScript = textarea.value;
+                textarea.style.border = 'none';
+            });
+        }
+        
+        // 进入第二步
+        function proceedToStep2() {
+            currentScript = document.getElementById('scriptTextarea').value;
+            
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            
+            // 根据播客模式设置音色界面
+            setupVoiceSettingsForStep2();
+            
+            // 更新步骤状态
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('completed');
+        }
+        
+        // 设置第二步的音色选择界面
+        function setupVoiceSettingsForStep2() {
+            const singleVoiceDiv = document.getElementById('singleVoiceSettings');
+            const dialogueVoiceDiv = document.getElementById('dialogueVoiceSettings');
+            
+            if (currentPodcastMode === 'dialogue') {
+                // 双人模式：显示双音色选择
+                singleVoiceDiv.style.display = 'none';
+                dialogueVoiceDiv.style.display = 'block';
+                
+                // 从第一步获取已选择的音色设置
+                const voiceA = document.getElementById('voiceA').value;
+                const voiceB = document.getElementById('voiceB').value;
+                
+                document.getElementById('voiceTypeA').value = voiceA;
+                document.getElementById('voiceTypeB').value = voiceB;
+            } else {
+                // 单人模式：显示单音色选择
+                singleVoiceDiv.style.display = 'block';
+                dialogueVoiceDiv.style.display = 'none';
+            }
+        }
+        
+        // 返回第一步
+        function backToStep1() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+            
+            // 更新步骤状态
+            document.getElementById('step1').classList.remove('completed');
+            document.getElementById('step1').classList.add('active');
+        }
+        
+        // 第二步：合成音频
+        async function synthesizeAudio() {
+            const btn = document.getElementById('synthesizeBtn');
+            const status = document.getElementById('audioStatus');
+            
+            if (!currentScript) {
+                status.innerHTML = '<div class="status error">请先生成脚本</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>合成中...';
+            
+            status.innerHTML = '<div class="status loading">正在合成音频，请稍候...</div>';
+            
+            const params = {
+                script: currentScript,
+                topic: currentTopic,
+                speedRatio: parseFloat(document.getElementById('speedRatio').value),
+                volumeRatio: parseFloat(document.getElementById('volumeRatio').value),
+                podcastMode: currentPodcastMode
+            };
+            
+            // 根据播客模式添加音色参数
+            if (currentPodcastMode === 'dialogue') {
+                // 双人模式：使用第二步的双音色选择
+                params.voiceA = document.getElementById('voiceTypeA').value;
+                params.voiceB = document.getElementById('voiceTypeB').value;
+            } else {
+                // 单人模式：使用单音色选择
+                params.voiceType = document.getElementById('voiceType').value;
+            }
+            
+            try {
+                const response = await fetch('/api/podcast/synthesize-audio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    
+                    status.innerHTML = `
+                        <div class="status success">
+                            <span>🎉</span>播客合成成功！
+                            <br><small>主题: ${data.topic}</small>
+                            <br><small>音频大小: ${Math.round(data.audioSize / 1024)} KB</small>
+                            <br><small>生成时间: ${new Date(data.generatedAt).toLocaleString()}</small>
+                            <div style="margin-top: 15px;">
+                                <button class="btn btn-secondary" onclick="downloadFile('audio', '${data.topic.replace(/[^\\w\\s-]/g, '').replace(/\\s+/g, '_')}_audio.mp3')">
+                                    <span>🎵</span>下载音频
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadFile('script', '${data.topic.replace(/[^\\w\\s-]/g, '').replace(/\\s+/g, '_')}_script.txt')">
+                                    <span>📄</span>下载脚本
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    status.innerHTML = `<div class="status error">音频合成失败：${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('音频合成错误:', error);
+                status.innerHTML = `<div class="status error">网络错误：${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🎵</span>合成音频';
+            }
+        }
+        
+        // 下载文件
+        function downloadFile(type, filename) {
+            const link = document.createElement('a');
+            link.href = `/download/${type}/${filename}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 更新滑块显示值
+        document.getElementById('speedRatio').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value;
+        });
+        
+        document.getElementById('volumeRatio').addEventListener('input', function() {
+            document.getElementById('volumeValue').textContent = this.value;
+        });
+        
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAIStatus();
+        });
+    </script>
+</body>
+</html>

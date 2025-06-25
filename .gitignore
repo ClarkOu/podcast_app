@@ -1,0 +1,41 @@
+# .gitignore
+
+# 依赖目录
+node_modules/
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# 环境变量文件（保护敏感信息）
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 输出文件
+output/
+temp/
+*.wav
+*.mp3
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 测试覆盖率
+coverage/
+dist/
+
+# 备份文件
+*.backup
+*.bak

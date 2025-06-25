@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>播客生成器 - 火山方舟TTS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            background: white;
+            color: #ff6b6b;
+            border-bottom: 3px solid #ff6b6b;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ff6b6b;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 10px 10px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(238, 90, 36, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 15px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .script-preview {
+            margin-top: 30px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .script-content textarea {
+            border: none;
+            padding: 20px;
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 300px;
+            background: #f8f9fa;
+        }
+        
+        .script-content textarea:focus {
+            outline: none;
+            background: white;
+        }
+        
+        .script-actions {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        
+        .progress-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e1e8ed;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .help-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .ai-status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        
+        .ai-status.enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .ai-status.disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ 播客生成器</h1>
+            <p>基于火山方舟TTS的智能播客制作工具（两步式流程）</p>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('single')">单个播客</button>
+            <button class="nav-tab" onclick="switchTab('new')">新版界面</button>
+        </div>
+        
+        <!-- 单个播客生成（两步式） -->
+        <div id="single" class="tab-content active">
+            <div class="form-section">
+                <h3><span>📝</span> 播客内容设置</h3>
+                
+                <div class="form-group">
+                    <label for="topic">播客主题 *</label>
+                    <input type="text" id="topic" placeholder="请输入播客主题，例如：人工智能的发展趋势">
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center;">
+                        <input type="checkbox" id="useAI" style="width: auto; margin-right: 10px;">
+                        使用AI生成内容
+                        <span id="aiStatus" class="ai-status disabled">检查中...</span>
+                    </label>
+                    <div class="help-text">
+                        启用后将使用OpenRouter大模型生成更丰富的播客内容，否则使用内置模板
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="style">播客风格</label>
+                        <select id="style">
+                            <option value="informative">信息性</option>
+                            <option value="conversational">对话式</option>
+                            <option value="educational">教育性</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">播客时长</label>
+                        <select id="duration">
+                            <option value="short">短篇 (2-3分钟)</option>
+                            <option value="medium" selected>中篇 (5-8分钟)</option>
+                            <option value="long">长篇 (10-15分钟)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="segments">内容段落数量</label>
+                    <input type="number" id="segments" value="3" min="1" max="8">
+                </div>
+                
+                <button class="btn" onclick="generateScript()" id="generateScriptBtn">
+                    <span>📝</span>第一步：生成脚本
+                </button>
+                
+                <div id="scriptStatus"></div>
+                
+                <div id="scriptPreview" class="script-preview" style="display: none;">
+                    <div class="form-section">
+                        <h3><span>📄</span> 播客脚本预览</h3>
+                        <div class="script-content">
+                            <textarea id="scriptTextarea" placeholder="脚本内容将在这里显示..."></textarea>
+                        </div>
+                        <div class="script-actions">
+                            <button class="btn btn-secondary" onclick="editScript()">
+                                <span>✏️</span>编辑脚本
+                            </button>
+                            <button class="btn" onclick="proceedToAudio()">
+                                <span>➡️</span>下一步：语音设置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二步：语音合成 -->
+            <div id="audioSection" class="form-section" style="display: none;">
+                <h3><span>🎵</span> 语音设置与合成</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="voiceType">音色选择</label>
+                        <select id="voiceType">
+                            <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="speedRatio">语速: <span id="speedValue">1.0</span></label>
+                        <input type="range" id="speedRatio" min="0.8" max="2.0" step="0.1" value="1.0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="volumeRatio">音量: <span id="volumeValue">1.0</span></label>
+                        <input type="range" id="volumeRatio" min="0.5" max="2.0" step="0.1" value="1.0">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn btn-secondary" onclick="backToScript()">
+                        <span>⬅️</span>返回修改脚本
+                    </button>
+                    <button class="btn" onclick="synthesizeAudio()" id="synthesizeBtn">
+                        <span>🎵</span>第二步：合成音频
+                    </button>
+                </div>
+                
+                <div id="audioStatus"></div>
+            </div>
+            
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="progressText">正在处理...</div>
+            </div>
+        </div>
+        
+        <!-- 新版界面链接 -->
+        <div id="new" class="tab-content">
+            <div class="form-section">
+                <h3><span>🚀</span> 新版播客生成器</h3>
+                <p style="color: #6c757d; margin-bottom: 20px;">
+                    我们推出了全新的播客生成界面，提供更好的用户体验和更多功能。
+                </p>
+                <a href="/new-podcast.html" class="btn">
+                    <span>🎯</span>访问新版界面
+                </a>
+                <div class="help-text">
+                    新版特性：更美观的界面、步骤指示器、更好的交互体验
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let aiEnabled = false;
+        let currentScript = '';
+        let currentTopic = '';
+        let currentMetadata = {};
+
+        // 页面加载时检查AI配置状态
+        async function checkAIStatus() {
+            try {
+                const response = await fetch('/api/ai/status');
+                const result = await response.json();
+                
+                aiEnabled = result.data.aiEnabled;
+                const aiStatus = document.getElementById('aiStatus');
+                const useAICheckbox = document.getElementById('useAI');
+                
+                if (aiEnabled) {
+                    aiStatus.textContent = `可用 (${result.data.model})`;
+                    aiStatus.className = 'ai-status enabled';
+                    useAICheckbox.disabled = false;
+                } else {
+                    aiStatus.textContent = '需要配置API Key';
+                    aiStatus.className = 'ai-status disabled';
+                    useAICheckbox.disabled = true;
+                    useAICheckbox.checked = false;
+                }
+            } catch (error) {
+                console.error('检查AI状态失败:', error);
+                const aiStatus = document.getElementById('aiStatus');
+                aiStatus.textContent = '检查失败';
+                aiStatus.className = 'ai-status disabled';
+                document.getElementById('useAI').disabled = true;
+            }
+        }
+
+        // 切换标签页
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 第一步：生成播客脚本
+        async function generateScript() {
+            const btn = document.getElementById('generateScriptBtn');
+            const status = document.getElementById('scriptStatus');
+            const progressContainer = document.getElementById('progressContainer');
+            const scriptPreview = document.getElementById('scriptPreview');
+            
+            const topic = document.getElementById('topic').value.trim();
+            if (!topic) {
+                status.innerHTML = '<div class="status error">请输入播客主题</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>生成中...';
+            progressContainer.style.display = 'block';
+            scriptPreview.style.display = 'none';
+            document.getElementById('audioSection').style.display = 'none';
+            
+            status.innerHTML = '<div class="status loading">正在生成播客脚本，请稍候...</div>';
+            
+            const params = {
+                topic: topic,
+                style: document.getElementById('style').value,
+                duration: document.getElementById('duration').value,
+                segments: parseInt(document.getElementById('segments').value),
+                useAI: document.getElementById('useAI').checked && aiEnabled
+            };
+            
+            try {
+                const response = await fetch('/api/podcast/generate-script', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const scriptData = result.data;
+                    
+                    // 显示脚本预览
+                    document.getElementById('scriptTextarea').value = scriptData.script;
+                    scriptPreview.style.display = 'block';
+                    
+                    // 保存数据
+                    currentScript = scriptData.script;
+                    currentTopic = topic;
+                    currentMetadata = scriptData.metadata;
+                    
+                    status.innerHTML = `
+                        <div class="status success">
+                            <span>✅</span> 脚本生成成功！
+                            <br><small>主题: ${scriptData.metadata.topic}</small>
+                            <br><small>生成方式: ${scriptData.metadata.generatedBy === 'openrouter' ? 'AI生成' : '模板生成'}</small>
+                            <br><small>预估时长: ${scriptData.metadata.estimatedLength}</small>
+                            <br><small style="color: #28a745;">请检查脚本内容，确认无误后点击"下一步"</small>
+                        </div>
+                    `;
+                } else {
+                    status.innerHTML = `<div class="status error">脚本生成失败：${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('脚本生成错误:', error);
+                status.innerHTML = `<div class="status error">网络错误：${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>📝</span>第一步：生成脚本';
+                progressContainer.style.display = 'none';
+            }
+        }
+        
+        // 编辑脚本
+        function editScript() {
+            const textarea = document.getElementById('scriptTextarea');
+            textarea.focus();
+            textarea.style.border = '2px solid #007bff';
+            
+            textarea.addEventListener('blur', function() {
+                currentScript = textarea.value;
+                textarea.style.border = 'none';
+            });
+        }
+        
+        // 进入音频设置
+        function proceedToAudio() {
+            currentScript = document.getElementById('scriptTextarea').value;
+            document.getElementById('audioSection').style.display = 'block';
+            document.getElementById('audioSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 返回脚本编辑
+        function backToScript() {
+            document.getElementById('audioSection').style.display = 'none';
+            document.getElementById('scriptPreview').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 第二步：合成音频
+        async function synthesizeAudio() {
+            const btn = document.getElementById('synthesizeBtn');
+            const status = document.getElementById('audioStatus');
+            const progressContainer = document.getElementById('progressContainer');
+            
+            if (!currentScript) {
+                status.innerHTML = '<div class="status error">请先生成脚本</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>合成中...';
+            progressContainer.style.display = 'block';
+            
+            status.innerHTML = '<div class="status loading">正在合成音频，请稍候...</div>';
+            document.getElementById('progressText').textContent = '正在合成音频...';
+            
+            const params = {
+                script: document.getElementById('scriptTextarea').value,
+                topic: currentTopic,
+                voiceType: document.getElementById('voiceType').value,
+                speedRatio: parseFloat(document.getElementById('speedRatio').value),
+                volumeRatio: parseFloat(document.getElementById('volumeRatio').value)
+            };
+            
+            try {
+                const response = await fetch('/api/podcast/synthesize-audio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    
+                    status.innerHTML = `
+                        <div class="status success">
+                            <span>🎉</span> 播客合成成功！
+                            <br><small>主题: ${data.topic}</small>
+                            <br><small>音频大小: ${Math.round(data.audioSize / 1024)} KB</small>
+                            <br><small>生成时间: ${new Date(data.generatedAt).toLocaleString()}</small>
+                            <div style="margin-top: 15px;">
+                                <button class="btn btn-small" onclick="downloadFile('audio', '${data.topic.replace(/[^\\w\\s-]/g, '').replace(/\\s+/g, '_')}_audio.mp3')">
+                                    <span>🎵</span>下载音频
+                                </button>
+                                <button class="btn btn-small" onclick="downloadFile('script', '${data.topic.replace(/[^\\w\\s-]/g, '').replace(/\\s+/g, '_')}_script.txt')">
+                                    <span>📄</span>下载脚本
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    status.innerHTML = `<div class="status error">音频合成失败：${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('音频合成错误:', error);
+                status.innerHTML = `<div class="status error">网络错误：${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🎵</span>第二步：合成音频';
+                progressContainer.style.display = 'none';
+            }
+        }
+        
+        // 下载文件
+        function downloadFile(type, filename) {
+            const link = document.createElement('a');
+            link.href = `/download/${type}/${filename}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 更新滑块显示值
+        document.getElementById('speedRatio').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value;
+        });
+        
+        document.getElementById('volumeRatio').addEventListener('input', function() {
+            document.getElementById('volumeValue').textContent = this.value;
+        });
+        
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAIStatus();
+        });
+    </script>
+</body>
+</html>
