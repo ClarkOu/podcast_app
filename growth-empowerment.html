@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成長賦能 - METIS AI 數字員工平台</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .growth-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .page-nav {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1100;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* 用戶菜單樣式 */
+        .user-menu {
+            position: relative;
+            z-index: 1200;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            position: relative;
+            z-index: 1201;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 107, 107, 0.3);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1200;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .user-info {
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .dropdown-item i {
+            margin-right: 12px;
+            width: 16px;
+            font-size: 14px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .growth-sections {
+            display: grid;
+            gap: 30px;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-size: 25px;
+            color: white;
+        }
+        
+        .career-path { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .skills-dev { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .mentoring { background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); }
+        
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .section-subtitle {
+            color: #888;
+            font-size: 1rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-card {
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: white;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+        }
+        
+        /* 為不同功能創建不同的圖標顏色 */
+        .feature-icon.career-explore { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .feature-icon.development { background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); }
+        .feature-icon.goal-track { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .feature-icon.skills { background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); }
+        .feature-icon.learning { background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%); }
+        .feature-icon.network { background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); }
+        .feature-icon.mentoring { background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); }
+        .feature-icon.coaching { background: linear-gradient(135deg, #e17055 0%, #f39c12 100%); }
+        .feature-icon.support { background: linear-gradient(135deg, #e84393 0%, #fd79a8 100%); }
+        .feature-icon.communication { background: linear-gradient(135deg, #55a3ff 0%, #003d82 100%); }
+        .feature-icon.digital-skills { background: linear-gradient(135deg, #2d3436 0%, #636e72 100%); }
+        .feature-icon.cognitive { background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%); }
+        .feature-icon.growth-analysis { background: linear-gradient(135deg, #00b894 0%, #55efc4 100%); }
+        
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .feature-description {
+            color: #666;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        
+        .progress-section {
+            margin-top: 20px;
+        }
+        
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .progress-item:last-child {
+            border-bottom: none;
+        }
+        
+        .progress-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .progress-info p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+            border-radius: 20px;
+        }
+        
+        .cta-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .cta-btn.secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .cta-btn.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="growth-container">
+        <!-- 導航區域 -->
+        <div class="page-nav">
+            <button class="back-btn" onclick="history.back()">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+            
+            <!-- 用戶菜單 -->
+            <div class="user-menu">
+                <div class="user-avatar" id="userAvatar">
+                    CW
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-info">
+                        <div class="user-name">Cily Wu</div>
+                        <div class="user-email">cily@metis.ai</div>
+                    </div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user"></i>
+                        個人資料
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        系統設置
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-bell"></i>
+                        通知設定
+                        <span style="margin-left: auto; background: #ff4757; color: white; border-radius: 10px; padding: 2px 8px; font-size: 12px;">3</span>
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-chart-bar"></i>
+                        使用統計
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-question-circle"></i>
+                        幫助中心
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-life-ring"></i>
+                        意見回饋
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item" style="color: #e74c3c;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        登出
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-header">
+            <h1 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px;">
+                <i class="fas fa-seedling" style="margin-right: 15px; color: #667eea;"></i>
+                成長賦能中心
+            </h1>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 20px;">個人能力提升與職涯發展規劃</p>
+            <p style="color: #888; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                AI驅動的個人成長平台，為每個人量身定制發展路徑，
+                提供持續學習機會，實現職業目標。
+            </p>
+        </div>
+
+        <div class="growth-sections">
+            <!-- 職涯規劃部分 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon career-path">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div>
+                        <h2 class="section-title">職涯發展規劃</h2>
+                        <p class="section-subtitle">個性化的職業發展路徑設計</p>
+                    </div>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon career-explore">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <h3 class="feature-title">職業探索</h3>
+                        <p class="feature-description">
+                            發現個人興趣和天賦，探索適合的職業方向，
+                            了解行業趨勢和發展機會。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon development">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h3 class="feature-title">發展路徑</h3>
+                        <p class="feature-description">
+                            制定清晰的職業發展路線圖，設定短期和長期目標，
+                            規劃每個階段的成長重點。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon goal-track">
+                            <i class="fas fa-target"></i>
+                        </div>
+                        <h3 class="feature-title">目標追蹤</h3>
+                        <p class="feature-description">
+                            設定可量化的發展目標，持續追蹤進度，
+                            定期調整策略確保目標達成。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能發展部分 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon skills-dev">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h2 class="section-title">技能提升訓練</h2>
+                        <p class="section-subtitle">針對性的能力建設和學習資源</p>
+                    </div>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon skills">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="feature-title">認知能力</h3>
+                        <p class="feature-description">
+                            提升分析思考、問題解決和創新能力，
+                            培養批判性思維和決策技巧。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon communication">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 class="feature-title">溝通協作</h3>
+                        <p class="feature-description">
+                            增強人際溝通、團隊合作和領導能力，
+                            學習跨文化交流和衝突解決。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon digital-skills">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3 class="feature-title">數字技能</h3>
+                        <p class="feature-description">
+                            掌握最新的數字化工具和技術，
+                            提升數據分析和AI應用能力。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <h3 style="color: #333; margin-bottom: 15px;">學習進度追蹤</h3>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <h4>數據分析基礎</h4>
+                            <p>已完成 8/10 個學習模組</p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <h4>項目管理認證</h4>
+                            <p>已完成 5/12 個學習模組</p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <h4>領導力發展</h4>
+                            <p>已完成 3/8 個學習模組</p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 38%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 導師輔導部分 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon mentoring">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <h2 class="section-title">AI智能導師</h2>
+                        <p class="section-subtitle">個人化的成長指導和回饋</p>
+                    </div>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon coaching">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 class="feature-title">AI教練</h3>
+                        <p class="feature-description">
+                            24/7個人AI教練，提供即時回饋和建議，
+                            根據學習進度調整指導方案。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon growth-analysis">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">成長分析</h3>
+                        <p class="feature-description">
+                            深度分析個人成長數據，識別優勢和改進點，
+                            提供科學的發展建議。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon network">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h3 class="feature-title">社群學習</h3>
+                        <p class="feature-description">
+                            連接志同道合的學習夥伴，參與學習社群，
+                            分享經驗和互相激勵。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2 style="color: white; margin-bottom: 15px;">開始您的成長之旅</h2>
+            <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 25px;">立即開啟個人化的職涯發展規劃</p>
+            <button class="cta-btn">開始評估</button>
+            <button class="cta-btn secondary">了解更多</button>
+        </div>
+    </div>
+
+    <script>
+        // 用戶菜單功能
+        const userAvatar = document.getElementById('userAvatar');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (userAvatar && userDropdown) {
+            // 點擊頭像切換下拉菜單
+            userAvatar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+            
+            // 點擊其他地方關閉下拉菜單
+            document.addEventListener('click', function(e) {
+                if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+            
+            // 下拉菜單項目點擊事件
+            const dropdownItems = userDropdown.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const text = this.textContent.trim();
+                    
+                    if (text === '登出') {
+                        if (confirm('確定要登出嗎？')) {
+                            alert('登出成功！');
+                            // 這裡可以添加實際的登出邏輯
+                            // window.location.href = 'login.html';
+                        }
+                    } else {
+                        alert(`${text}功能即將開放！`);
+                    }
+                    
+                    userDropdown.classList.remove('show');
+                });
+            });
+        }
+    
+        // 添加功能卡片點擊效果
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const title = this.querySelector('.feature-title').textContent;
+                alert(`${title}功能即將開放，敬請期待！`);
+            });
+        });
+        
+        // 添加CTA按鈕點擊效果
+        document.querySelectorAll('.cta-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = this.textContent;
+                alert(`${text}功能即將開放，我們會為您量身定制成長方案！`);
+            });
+        });
+    </script>
+</body>
+</html>
