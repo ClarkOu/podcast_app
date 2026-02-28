@@ -3,593 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI播客生成器 - 两步式流程</title>
+    <title>AI 播客生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:#f1f5f9; --surface:#fff; --border:#e2e8f0; --border-md:#cbd5e1;
+            --text:#0f172a; --text-2:#475569; --text-3:#94a3b8;
+            --accent:#7c3aed; --accent-lt:#ede9fe; --accent-dk:#5b21b6;
+            --cyan:#06b6d4; --green:#10b981; --green-lt:#d1fae5; --red:#ef4444; --red-lt:#fee2e2;
+            --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+            --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.04);
+            --radius-sm:8px; --radius:12px; --radius-lg:16px;
         }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .step {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border-left: 5px solid #ff6b6b;
-        }
-        
-        .step.active {
-            border-left-color: #28a745;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.1);
-        }
-        
-        .step.completed {
-            border-left-color: #6c757d;
-            opacity: 0.8;
-        }
-        
-        .step h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #ff6b6b;
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
-        }
-        
-        .btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #495057);
-        }
-        
-        .script-preview {
-            margin-top: 30px;
-            border: 2px solid #e9ecef;
-            border-radius: 15px;
-            overflow: hidden;
-            animation: slideDown 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .script-header {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            padding: 20px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .script-header h4 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .script-meta {
-            font-size: 14px;
-            color: #6c757d;
-            margin-bottom: 15px;
-        }
-        
-        .script-content {
-            background: white;
-            position: relative;
-        }
-        
-        .script-content textarea {
-            border: none;
-            padding: 25px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 16px;
-            line-height: 1.8;
-            resize: vertical;
-            min-height: 400px;
-            background: transparent;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .script-content textarea:focus {
-            outline: none;
-            background: #fafbfc;
-        }
-        
-        .script-streaming {
-            padding: 25px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 16px;
-            line-height: 1.8;
-            min-height: 400px;
-            background: white;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        
-        .script-streaming .typing-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 20px;
-            background: #007bff;
-            animation: blink 1s infinite;
-            margin-left: 2px;
-        }
-        
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-        
-        .script-actions {
-            padding: 20px 25px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            gap: 15px;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .script-info {
-            font-size: 14px;
-            color: #6c757d;
-        }
-        
-        .script-buttons {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-weight: 500;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status.loading {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .ai-status {
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        
-        .ai-status.enabled {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .ai-status.disabled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .help-text {
-            font-size: 14px;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-        
-        .step-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #6c757d;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .step-number.active {
-            background: #ff6b6b;
-        }
-        
-        .step-number.completed {
-            background: #28a745;
-        }
-        
-        .dialogue-settings {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 15px 0;
-            animation: slideDown 0.3s ease;
-        }
-        
-        .dialogue-preview {
-            margin-top: 20px;
-        }
-        
-        .dialogue-hostA {
-            background: linear-gradient(135deg, #e3f2fd, #f1f8ff);
-            border-left: 4px solid #2196f3;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
-        
-        .dialogue-hostB {
-            background: linear-gradient(135deg, #f3e5f5, #faf2ff);
-            border-left: 4px solid #9c27b0;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
-        
-        .speaker-label {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .speaker-content {
-            line-height: 1.6;
-            color: #444;
-        }
+        body { font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; line-height:1.6; }
+        .nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; }
+        .nav-logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; color:var(--text); text-decoration:none; }
+        .logo-icon { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--cyan)); display:flex; align-items:center; justify-content:center; }
+        .nav-link { font-size:13px; color:var(--text-2); text-decoration:none; padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); }
+        .nav-link:hover { border-color:var(--accent); color:var(--accent); }
+        .page { max-width:900px; margin:0 auto; padding:30px 20px 60px; }
+        .hero { margin-bottom:20px; }
+        .hero h1 { font-size:26px; font-weight:700; margin-bottom:6px; }
+        .hero p { color:var(--text-2); }
+        .steps-progress { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:999px; width:max-content; padding:6px; margin-bottom:20px; }
+        .sp-item { display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; color:var(--text-3); font-size:13px; font-weight:600; }
+        .sp-item.active { background:var(--accent); color:#fff; }
+        .sp-item.done { color:var(--green); }
+        .sp-num { width:20px; height:20px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+        .sp-item.active .sp-num { background:rgba(255,255,255,.3); color:#fff; }
+        .sp-item.done .sp-num { background:var(--green-lt); color:var(--green); }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:16px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid var(--border); font-size:15px; font-weight:700; }
+        .card-body { padding:20px; }
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+        @media (max-width:700px){ .form-grid, .form-grid-3 { grid-template-columns:1fr; } }
+        .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+        .form-group label { font-size:13px; font-weight:500; color:var(--text-2); }
+        input, select, textarea { width:100%; padding:9px 12px; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:14px; color:var(--text); font-family:inherit; }
+        input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,58,237,.12); background:#fff; }
+        textarea { resize:vertical; min-height:320px; line-height:1.9; }
+        .mode-tabs { display:flex; gap:6px; }
+        .mode-tab { flex:1; border:1.5px solid var(--border); background:var(--bg); color:var(--text-2); border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:600; }
+        .mode-tab.active { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
+        .dialogue-settings { margin-top:12px; }
+        .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:12px; border:1.5px solid var(--border); background:var(--bg); border-radius:10px; padding:12px 14px; }
+        .toggle-info strong { display:block; font-size:13px; }
+        .toggle-info span { font-size:12px; color:var(--text-3); }
+        .toggle { position:relative; width:40px; height:22px; }
+        .toggle input { opacity:0; width:0; height:0; }
+        .toggle-track { position:absolute; inset:0; border-radius:22px; background:var(--border-md); }
+        .toggle-track::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform .2s; }
+        .toggle input:checked + .toggle-track { background:var(--accent); }
+        .toggle input:checked + .toggle-track::after { transform:translateX(18px); }
+        .ai-status { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; padding:2px 9px; border-radius:20px; }
+        .ai-status.enabled { background:var(--green-lt); color:var(--green); }
+        .ai-status.disabled { background:#fef3c7; color:#92400e; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 18px; border:none; border-radius:10px; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; text-decoration:none; }
+        .btn-primary { background:var(--accent); color:#fff; }
+        .btn-primary:hover { background:var(--accent-dk); }
+        .btn-primary:disabled { background:var(--border-md); color:var(--text-3); cursor:not-allowed; }
+        .btn-ghost { background:transparent; color:var(--text-2); border:1.5px solid var(--border); }
+        .btn-sm { padding:7px 12px; font-size:13px; }
+        .range-wrap { display:flex; align-items:center; gap:10px; }
+        input[type=range] { accent-color:var(--accent); }
+        .range-val { min-width:28px; text-align:right; color:var(--accent); font-weight:700; }
+        .status { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-radius:10px; margin-top:14px; font-size:13px; }
+        .status.loading { background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; }
+        .status.success { background:var(--green-lt); color:#065f46; border:1px solid #bbf7d0; }
+        .status.error { background:var(--red-lt); color:#991b1b; border:1px solid #fca5a5; }
+        .script-meta-pills { margin-top:8px; font-size:12px; color:var(--text-2); }
+        .script-textarea, .streaming-area { width:100%; min-height:320px; border:none; padding:16px 20px; font-size:14px; line-height:1.9; background:#fff; }
+        .streaming-area { white-space:pre-wrap; }
+        .script-box-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 16px; border-top:1px solid var(--border); background:var(--bg); }
+        .script-info-text { font-size:12px; color:var(--text-3); }
+        .audio-result { background:linear-gradient(135deg,#f0fdf4,#ecfdf5); border:1.5px solid #bbf7d0; border-radius:12px; padding:16px; margin-top:8px; }
+        .audio-result audio { width:100%; margin:10px 0; }
+        .audio-result .meta { font-size:12px; color:var(--text-2); margin-bottom:12px; }
+        .download-btns { display:flex; flex-wrap:wrap; gap:8px; }
+        .btn-secondary { display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; color:var(--text-2); text-decoration:none; background:#fff; }
+        .synthesis-progress { background:#faf5ff; border:1.5px solid #ddd6fe; border-radius:12px; padding:16px; margin-top:14px; }
+        .progress-title { display:flex; justify-content:space-between; color:var(--accent); font-size:13px; font-weight:600; margin-bottom:10px; }
+        .progress-bar-wrap { height:6px; background:var(--border); border-radius:999px; overflow:hidden; margin-bottom:8px; }
+        .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--cyan)); transition:width .3s; }
+        .progress-log { max-height:80px; overflow:auto; font-size:12px; color:var(--text-2); line-height:1.7; }
+        .history-section { margin-top:26px; }
+        .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .history-item { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; }
+        .history-item .topic { font-weight:600; margin-bottom:4px; }
+        .history-item .meta { display:flex; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--text-2); }
+        .history-item-actions { display:flex; gap:8px; }
+        .btn-icon { padding:6px 10px; border:1px solid var(--border); background:var(--bg); border-radius:8px; font-size:12px; color:var(--text-2); text-decoration:none; cursor:pointer; }
+        .history-empty,.h-empty { text-align:center; padding:34px; color:var(--text-3); }
+        .history-audio-wrap { margin-top:10px; width:100%; }
+        .history-audio-wrap audio { width:100%; }
+        .dialogue-hostA,.dialogue-hostB { padding:10px 14px; border-radius:8px; margin-bottom:6px; font-size:13px; }
+        .dialogue-hostA { background:#eff6ff; border-left:3px solid #3b82f6; }
+        .dialogue-hostB { background:#fdf4ff; border-left:3px solid #a855f7; }
+        .speaker-label { font-size:11px; font-weight:700; margin-bottom:4px; }
+        .loading-spinner { display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg);} }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎙️ AI播客生成器</h1>
-            <p>智能两步式播客创作工具</p>
-        </div>
-        
-        <div class="content">
-            <!-- 第一步：生成脚本 -->
-            <div class="step active" id="step1">
-                <div class="step-indicator">
-                    <div class="step-number active">1</div>
-                    <h3>📝 生成播客脚本</h3>
-                </div>
-                
+<nav class="nav">
+    <a href="/new-podcast.html" class="nav-logo"><div class="logo-icon">🎙</div><span>PodcastAI</span></a>
+    <a href="/" class="nav-link">🔧 TTS 测试</a>
+</nav>
+<div class="page">
+    <div class="hero">
+        <h1>AI 播客生成器</h1>
+        <p>两步完成：先生成脚本，再合成音频</p>
+    </div>
+
+    <div class="steps-progress" id="stepsBar">
+        <div class="sp-item active" id="spItem1"><div class="sp-num">1</div>生成脚本</div>
+        <div class="sp-item" id="spItem2"><div class="sp-num">2</div>合成音频</div>
+    </div>
+
+    <div id="step1">
+        <div class="card">
+            <div class="card-header">📝 播客设置</div>
+            <div class="card-body">
                 <div class="form-group">
-                    <label for="topic">播客主题 *</label>
-                    <input type="text" id="topic" placeholder="请输入播客主题，例如：人工智能的发展趋势">
+                    <label for="topic">播客主题 <span style="color:var(--red)">*</span></label>
+                    <input type="text" id="topic" placeholder="例如：人工智能发展趋势">
                 </div>
-                
                 <div class="form-group">
-                    <label for="podcastMode">播客模式</label>
-                    <select id="podcastMode" onchange="togglePodcastMode()">
-                        <option value="single">单人播客</option>
-                        <option value="dialogue">双人互动</option>
-                    </select>
-                    <div class="help-text">选择单人叙述或双人对话形式的播客</div>
-                </div>
-                
-                <!-- 双人模式设置（默认隐藏） -->
-                <div id="dialogueSettings" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="hostARole">主持人A角色</label>
-                            <select id="hostARole">
-                                <option value="主持人">主持人</option>
-                                <option value="专家">专家学者</option>
-                                <option value="采访者">采访者</option>
-                                <option value="讲述者">讲述者</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="hostBRole">主持人B角色</label>
-                            <select id="hostBRole">
-                                <option value="嘉宾">嘉宾</option>
-                                <option value="讨论伙伴">讨论伙伴</option>
-                                <option value="提问者">提问者</option>
-                                <option value="解说员">解说员</option>
-                            </select>
-                        </div>
+                    <label>播客模式</label>
+                    <div class="mode-tabs">
+                        <button class="mode-tab active" id="modeTabSingle" onclick="setMode('single')">🎤 单人播客</button>
+                        <button class="mode-tab" id="modeTabDialogue" onclick="setMode('dialogue')">🎭 双人互动</button>
                     </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="voiceA">主持人A音色</label>
-                            <select id="voiceA">
-                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
-                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
-                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
-                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
-                            </select>
+                    <input type="hidden" id="podcastMode" value="single">
+                </div>
+                <div id="dialogueSettings" style="display:none;">
+                    <div class="dialogue-settings">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="hostARole">主持人 A 角色</label>
+                                <select id="hostARole"><option value="主持人">主持人</option><option value="专家">专家学者</option><option value="采访者">采访者</option><option value="讲述者">讲述者</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hostBRole">主持人 B 角色</label>
+                                <select id="hostBRole"><option value="嘉宾">嘉宾</option><option value="讨论伙伴">讨论伙伴</option><option value="提问者">提问者</option><option value="解说员">解说员</option></select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="voiceB">主持人B音色</label>
-                            <select id="voiceB">
-                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
-                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
-                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
-                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
-                            </select>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="voiceA">主持人 A 音色</label>
+                                <select id="voiceA"><option disabled>加载中...</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="voiceB">主持人 B 音色</label>
+                                <select id="voiceB"><option disabled>加载中...</option></select>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
                 <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="useAI" style="width: auto; margin-right: 10px;">
-                        使用AI生成内容
-                    </label>
-                    <div id="aiStatusDiv" class="ai-status disabled">
-                        正在检查AI配置...
+                    <div class="toggle-row">
+                        <div class="toggle-info"><strong>使用 AI 生成脚本</strong><span id="aiStatusDiv" class="ai-status disabled">正在检查...</span></div>
+                        <label class="toggle"><input type="checkbox" id="useAI"><span class="toggle-track"></span></label>
                     </div>
                 </div>
-                
-                <div class="form-row">
+                <div class="form-grid-3">
                     <div class="form-group">
                         <label for="style">播客风格</label>
-                        <select id="style">
-                            <option value="informative">信息性</option>
-                            <option value="conversational">对话式</option>
-                            <option value="educational">教育性</option>
-                        </select>
+                        <select id="style"><option value="informative">📊 信息性</option><option value="conversational">💬 对话式</option><option value="educational">📚 教育性</option></select>
                     </div>
-                    
                     <div class="form-group">
                         <label for="duration">播客时长</label>
-                        <select id="duration">
-                            <option value="short">短篇 (2-3分钟)</option>
-                            <option value="medium" selected>中篇 (5-8分钟)</option>
-                            <option value="long">长篇 (10-15分钟)</option>
-                        </select>
+                        <select id="duration"><option value="short">⚡ 短篇 (2-3 分钟)</option><option value="medium" selected>🎵 中篇 (5-8 分钟)</option><option value="long">🎼 长篇 (10-15 分钟)</option></select>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="segments">内容段落数量</label>
-                    <input type="number" id="segments" value="3" min="1" max="8">
-                </div>
-                
-                <button class="btn" onclick="generateScript()" id="generateScriptBtn">
-                    <span>📝</span>生成脚本
-                </button>
-                
-                <div id="scriptStatus"></div>
-                
-                <div id="scriptPreview" class="script-preview" style="display: none;">
-                    <div class="script-header">
-                        <h4>
-                            <span>📄</span>
-                            <span>播客脚本预览</span>
-                            <span id="streamingIndicator" style="display: none;">
-                                <span class="loading-spinner"></span>
-                                <small style="margin-left: 10px; color: #007bff;">AI正在生成中...</small>
-                            </span>
-                        </h4>
-                        <div class="script-meta" id="scriptMeta"></div>
-                    </div>
-                    
-                    <div class="script-content">
-                        <div id="scriptStreaming" class="script-streaming" style="display: none;"></div>
-                        <textarea id="scriptTextarea" placeholder="脚本内容将在这里显示..." style="display: none;"></textarea>
-                    </div>
-                    
-                    <div class="script-actions">
-                        <div class="script-info" id="scriptInfo"></div>
-                        <div class="script-buttons">
-                            <button class="btn btn-secondary" onclick="editScript()">
-                                <span>✏️</span>编辑脚本
-                            </button>
-                            <button class="btn" onclick="proceedToStep2()">
-                                <span>➡️</span>下一步：合成音频
-                            </button>
-                        </div>
+                    <div class="form-group">
+                        <label for="segments">段落数量</label>
+                        <input type="number" id="segments" value="3" min="1" max="8">
                     </div>
                 </div>
             </div>
-            
-            <!-- 第二步：合成音频 -->
-            <div class="step" id="step2" style="display: none;">
-                <div class="step-indicator">
-                    <div class="step-number completed">1</div>
-                    <div class="step-number active">2</div>
-                    <h3>🎵 合成音频</h3>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="generateScript()" id="generateScriptBtn">✨ 生成脚本</button>
+        </div>
+        <div id="scriptStatus"></div>
+
+        <div id="scriptPreview" class="card" style="display:none;margin-top:14px;">
+            <div class="card-header">
+                <div>📄 播客脚本 <span id="streamingIndicator" style="display:none;margin-left:8px;color:var(--accent);font-size:12px;">生成中…</span></div>
+                <div class="script-meta-pills" id="scriptMeta"></div>
+            </div>
+            <div id="scriptStreaming" class="streaming-area" style="display:none"></div>
+            <textarea id="scriptTextarea" class="script-textarea" style="display:none" placeholder="脚本内容将在这里显示…"></textarea>
+            <div class="script-box-footer">
+                <span class="script-info-text" id="scriptInfo"></span>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-ghost btn-sm" onclick="editScript()">✏️ 编辑</button>
+                    <button class="btn btn-primary btn-sm" onclick="proceedToStep2()">下一步 →</button>
                 </div>
-                
-                <div class="form-row">
-                    <!-- 单人模式音色选择 -->
-                    <div id="singleVoiceSettings">
-                        <div class="form-group">
-                            <label for="voiceType">音色选择</label>
-                            <select id="voiceType">
-                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
-                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
-                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
-                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- 双人模式音色选择 -->
-                    <div id="dialogueVoiceSettings" style="display: none;">
-                        <div class="form-group">
-                            <label for="voiceTypeA">主持人A音色</label>
-                            <select id="voiceTypeA">
-                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
-                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
-                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
-                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="voiceTypeB">主持人B音色</label>
-                            <select id="voiceTypeB">
-                                <option value="ICL_zh_male_cixingnansang_tob">磁性男声</option>
-                                <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
-                                <option value="ICL_zh_male_yuanqishaonian_tob">元气少年</option>
-                                <option value="ICL_zh_male_satuoqingnian_tob">萨托青年</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="speedRatio">语速: <span id="speedValue">1.0</span></label>
-                        <input type="range" id="speedRatio" min="0.8" max="2.0" step="0.1" value="1.0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="volumeRatio">音量: <span id="volumeValue">1.0</span></label>
-                        <input type="range" id="volumeRatio" min="0.5" max="2.0" step="0.1" value="1.0">
-                    </div>
-                </div>
-                
-                <div class="script-actions">
-                    <button class="btn btn-secondary" onclick="backToStep1()">
-                        <span>⬅️</span>返回修改脚本
-                    </button>
-                    <button class="btn" onclick="synthesizeAudio()" id="synthesizeBtn">
-                        <span>🎵</span>合成音频
-                    </button>
-                </div>
-                
-                <div id="audioStatus"></div>
             </div>
         </div>
     </div>
+
+    <div id="step2" style="display:none;">
+        <div class="card">
+            <div class="card-header">🎵 音频合成</div>
+            <div class="card-body">
+                <div id="singleVoiceSettings">
+                    <div class="form-group"><label for="voiceType">音色</label><select id="voiceType"><option disabled>加载中...</option></select></div>
+                </div>
+                <div id="dialogueVoiceSettings" style="display:none;">
+                    <div class="form-grid">
+                        <div class="form-group"><label for="voiceTypeA">主持人 A 音色</label><select id="voiceTypeA"><option disabled>加载中...</option></select></div>
+                        <div class="form-group"><label for="voiceTypeB">主持人 B 音色</label><select id="voiceTypeB"><option disabled>加载中...</option></select></div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>语速</label>
+                        <div class="range-wrap"><input type="range" id="speedRatio" min="0.8" max="2.0" step="0.1" value="1.0"><span class="range-val" id="speedValue">1.0</span></div>
+                    </div>
+                    <div class="form-group">
+                        <label>音量</label>
+                        <div class="range-wrap"><input type="range" id="volumeRatio" min="0.5" max="2.0" step="0.1" value="1.0"><span class="range-val" id="volumeValue">1.0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <button class="btn btn-ghost" onclick="backToStep1()">← 返回修改脚本</button>
+            <button class="btn btn-primary" onclick="synthesizeAudio()" id="synthesizeBtn">🎵 开始合成</button>
+        </div>
+        <div id="audioStatus"></div>
+    </div>
+
+    <div class="history-section">
+        <div class="section-header">
+            <h3>🕘 生成历史</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadHistory(this)" id="historyRefreshBtn">🔄 刷新</button>
+        </div>
+        <div id="historyList"><div class="h-empty">正在加载…</div></div>
+    </div>
+</div>
+
+<script>
+    function setMode(m) {
+        document.getElementById('podcastMode').value = m;
+        document.getElementById('modeTabSingle').classList.toggle('active', m === 'single');
+        document.getElementById('modeTabDialogue').classList.toggle('active', m === 'dialogue');
+        togglePodcastMode();
+    }
+    function updateStepBar(s) {
+        var a = document.getElementById('spItem1'), b = document.getElementById('spItem2');
+        if (s === 2) { a.classList.remove('active'); a.classList.add('done'); b.classList.remove('done'); b.classList.add('active'); }
+        else { b.classList.remove('active'); b.classList.remove('done'); a.classList.remove('done'); a.classList.add('active'); }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var s2 = document.getElementById('step2');
+        if (s2) {
+            new MutationObserver(function() {
+                updateStepBar(s2.style.display !== 'none' ? 2 : 1);
+            }).observe(s2, { attributes: true, attributeFilter: ['style'] });
+        }
+    });
+</script>
 
     <script>
         let aiEnabled = false;
@@ -701,18 +380,6 @@
             }
             
             return html;
-        }
-
-        // 切换播客模式
-        function togglePodcastMode() {
-            const mode = document.getElementById('podcastMode').value;
-            const dialogueSettings = document.getElementById('dialogueSettings');
-            
-            if (mode === 'dialogue') {
-                dialogueSettings.style.display = 'block';
-            } else {
-                dialogueSettings.style.display = 'none';
-            }
         }
 
         // 第一步：生成播客脚本（支持流式输出）
@@ -985,68 +652,144 @@
         }
         
         // 第二步：合成音频
+        // 渲染成功后的音频结果卡片
+        function renderAudioResult(data) {
+            const safeName = data.topic.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_').substring(0, 50);
+            const audioFilename  = `${safeName}_audio.mp3`;
+            const scriptFilename = `${safeName}_script.txt`;
+            const audioUrl = `/download/audio/${audioFilename}`;
+            return `
+                <div class="status success"><span>🎉</span>播客合成成功！</div>
+                <div class="audio-result">
+                    <h4>🎵 立即试听</h4>
+                    <audio controls autoplay src="${audioUrl}"></audio>
+                    <div class="meta">
+                        <strong>主题：</strong>${data.topic} &nbsp;|
+                        <strong> 大小：</strong>${Math.round(data.audioSize / 1024)} KB &nbsp;|
+                        <strong> 生成时间：</strong>${new Date(data.generatedAt).toLocaleString()}
+                    </div>
+                    <div class="download-btns">
+                        <a class="btn btn-secondary" href="${audioUrl}" download="${audioFilename}">
+                            <span>⬇️</span>下载音频
+                        </a>
+                        <a class="btn btn-secondary" href="/download/script/${scriptFilename}" download="${scriptFilename}">
+                            <span>📄</span>下载脚本
+                        </a>
+                    </div>
+                </div>`;
+        }
+
         async function synthesizeAudio() {
             const btn = document.getElementById('synthesizeBtn');
             const status = document.getElementById('audioStatus');
-            
+
             if (!currentScript) {
                 status.innerHTML = '<div class="status error">请先生成脚本</div>';
                 return;
             }
-            
+
             btn.disabled = true;
             btn.innerHTML = '<span class="loading-spinner"></span>合成中...';
-            
-            status.innerHTML = '<div class="status loading">正在合成音频，请稍候...</div>';
-            
-            const params = {
+
+            const baseParams = {
                 script: currentScript,
                 topic: currentTopic,
                 speedRatio: parseFloat(document.getElementById('speedRatio').value),
-                volumeRatio: parseFloat(document.getElementById('volumeRatio').value),
-                podcastMode: currentPodcastMode
+                volumeRatio: parseFloat(document.getElementById('volumeRatio').value)
             };
-            
-            // 根据播客模式添加音色参数
+
+            // ── 双人对话模式：SSE 实时进度 ──
             if (currentPodcastMode === 'dialogue') {
-                // 双人模式：使用第二步的双音色选择
-                params.voiceA = document.getElementById('voiceTypeA').value;
-                params.voiceB = document.getElementById('voiceTypeB').value;
-            } else {
-                // 单人模式：使用单音色选择
-                params.voiceType = document.getElementById('voiceType').value;
+                const params = {
+                    ...baseParams,
+                    voiceA: document.getElementById('voiceTypeA').value,
+                    voiceB: document.getElementById('voiceTypeB').value
+                };
+
+                status.innerHTML = `
+                    <div class="synthesis-progress">
+                        <div class="progress-title">
+                            <span>🎭 正在合成双人对话...</span>
+                            <span id="progressText">准备中</span>
+                        </div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+                        </div>
+                        <div class="progress-log" id="progressLog"></div>
+                    </div>`;
+
+                try {
+                    const response = await fetch('/api/podcast/synthesize-audio-stream', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
+                    });
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // 保留未完整的行
+
+                        for (const line of lines) {
+                            if (!line.startsWith('data: ')) continue;
+                            try {
+                                const evt = JSON.parse(line.slice(6));
+
+                                if (evt.type === 'start') {
+                                    document.getElementById('progressText').textContent = `0 / ${evt.total} 段`;
+
+                                } else if (evt.type === 'progress') {
+                                    const pct = Math.round((evt.current / evt.total) * 100);
+                                    document.getElementById('progressBar').style.width = pct + '%';
+                                    document.getElementById('progressText').textContent = `${evt.current} / ${evt.total} 段`;
+                                    const log = document.getElementById('progressLog');
+                                    const who = evt.speaker === 'hostA' ? '🔵 主持人A' : '🟣 主持人B';
+                                    log.innerHTML += `${who} 第${evt.current}段合成完成<br>`;
+                                    log.scrollTop = log.scrollHeight;
+
+                                } else if (evt.type === 'complete') {
+                                    status.innerHTML = renderAudioResult(evt.data);
+
+                                } else if (evt.type === 'error') {
+                                    status.innerHTML = `<div class="status error">合成失败：${evt.error}</div>`;
+                                }
+                            } catch (e) { /* 忽略解析异常 */ }
+                        }
+                    }
+                } catch (error) {
+                    console.error('双人对话合成错误:', error);
+                    status.innerHTML = `<div class="status error">网络错误：${error.message}</div>`;
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🎵</span>合成音频';
+                }
+                return;
             }
-            
+
+            // ── 单人模式：普通 fetch ──
+            const params = {
+                ...baseParams,
+                podcastMode: 'single',
+                voiceType: document.getElementById('voiceType').value
+            };
+
+            status.innerHTML = '<div class="status loading">正在合成音频，请稍候...</div>';
+
             try {
                 const response = await fetch('/api/podcast/synthesize-audio', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(params)
                 });
-                
                 const result = await response.json();
-                
                 if (result.success) {
-                    const data = result.data;
-                    
-                    status.innerHTML = `
-                        <div class="status success">
-                            <span>🎉</span>播客合成成功！
-                            <br><small>主题: ${data.topic}</small>
-                            <br><small>音频大小: ${Math.round(data.audioSize / 1024)} KB</small>
-                            <br><small>生成时间: ${new Date(data.generatedAt).toLocaleString()}</small>
-                            <div style="margin-top: 15px;">
-                                <button class="btn btn-secondary" onclick="downloadFile('audio', '${data.topic.replace(/[^\\w\\s-]/g, '').replace(/\\s+/g, '_')}_audio.mp3')">
-                                    <span>🎵</span>下载音频
-                                </button>
-                                <button class="btn btn-secondary" onclick="downloadFile('script', '${data.topic.replace(/[^\\w\\s-]/g, '').replace(/\\s+/g, '_')}_script.txt')">
-                                    <span>📄</span>下载脚本
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                    status.innerHTML = renderAudioResult(result.data);
                 } else {
                     status.innerHTML = `<div class="status error">音频合成失败：${result.error}</div>`;
                 }
@@ -1078,9 +821,123 @@
             document.getElementById('volumeValue').textContent = this.value;
         });
         
+        // 从 /api/voices 动态加载音色列表，填充所有音色下拉框
+        async function loadVoices() {
+            try {
+                const response = await fetch('/api/voices');
+                const result = await response.json();
+                if (!result.success || !result.voices.length) return;
+
+                const voices = result.voices;
+                const langLabel = { 'zh-CN': '普通话', 'zh-YUE': '粤语', 'en-US': '英文' };
+
+                function buildOptions(voices, defaultId) {
+                    return voices.map(v => {
+                        const lang = langLabel[v.language] || v.language;
+                        const sel = v.id === defaultId ? ' selected' : '';
+                        return `<option value="${v.id}"${sel}>${v.name}（${lang}）</option>`;
+                    }).join('');
+                }
+
+                const defaultFemale = (voices.find(v => v.gender === 'female') || voices[0]).id;
+                const defaultMale   = (voices.find(v => v.gender === 'male')   || voices[0]).id;
+
+                const assignments = {
+                    voiceA:     defaultFemale,
+                    voiceB:     defaultMale,
+                    voiceType:  defaultFemale,
+                    voiceTypeA: defaultFemale,
+                    voiceTypeB: defaultMale,
+                };
+
+                for (const [id, defaultId] of Object.entries(assignments)) {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = buildOptions(voices, defaultId);
+                }
+            } catch (error) {
+                console.error('加载音色列表失败:', error);
+            }
+        }
+
+        // 加载历史记录
+        async function loadHistory(btn) {
+            const list = document.getElementById('historyList');
+            if (btn) { btn.textContent = '⏳ 加载中...'; btn.disabled = true; }
+
+            try {
+                const response = await fetch('/api/podcast/history');
+                const result = await response.json();
+
+                if (!result.success || result.data.length === 0) {
+                    list.innerHTML = '<div class="history-empty">暂无生成历史。完成一次播客生成后将在此显示。</div>';
+                    return;
+                }
+
+                const styleMap = { informative: '信息性', conversational: '对话式', educational: '教育性' };
+                const durationMap = { short: '短篇', medium: '中篇', long: '长篇' };
+                const generatedByMap = {
+                    openrouter: '🤖 AI生成',
+                    template: '📝 模板生成',
+                    'single-synthesis': '🎧 单人合成',
+                    'dialogue-synthesis': '🎭 双人合成'
+                };
+
+                list.innerHTML = result.data.map((item, idx) => {
+                    const audioFile = item.audioPath ? item.audioPath.split('/').pop() : null;
+                    const scriptFile = item.scriptPath ? item.scriptPath.split('/').pop() : null;
+                    const audioUrl   = `/download/audio/${audioFile}`;
+                    const date = item.generatedAt ? new Date(item.generatedAt).toLocaleString() : '未知时间';
+                    const size = item.audioSize ? `${Math.round(item.audioSize / 1024)} KB` : '';
+                    const style    = styleMap[item.style] || item.style || '';
+                    const duration = durationMap[item.duration] || item.duration || '';
+                    const genBy    = generatedByMap[item.generatedBy] || '📝 模板生成';
+
+                    return `
+                        <div class="history-item" id="hitem-${idx}">
+                            <div class="history-item-info">
+                                <div class="topic">🎙️ ${item.topic || '未命名'}</div>
+                                <div class="meta">
+                                    <span>🕐 ${date}</span>
+                                    ${style    ? `<span>🎨 ${style}</span>` : ''}
+                                    ${duration ? `<span>⏱ ${duration}</span>` : ''}
+                                    ${size     ? `<span>💾 ${size}</span>` : ''}
+                                    <span>${genBy}</span>
+                                </div>
+                            </div>
+                            <div class="history-item-actions">
+                                ${audioFile ? `
+                                <button class="btn-icon" onclick="toggleHistoryAudio(${idx}, '${audioUrl}')">
+                                    ▶ 播放
+                                </button>
+                                <a class="btn-icon" href="${audioUrl}" download="${audioFile}">⬇ 音频</a>` : ''}
+                                ${scriptFile ? `<a class="btn-icon" href="/download/script/${scriptFile}" download="${scriptFile}">📄 脚本</a>` : ''}
+                            </div>
+                        </div>`;
+                }).join('');
+
+            } catch (error) {
+                list.innerHTML = `<div class="history-empty">加载失败：${error.message}</div>`;
+            } finally {
+                if (btn) { btn.textContent = '🔄 刷新'; btn.disabled = false; }
+            }
+        }
+
+        // 展开 / 收起历史条目内的音频播放器
+        function toggleHistoryAudio(idx, audioUrl) {
+            const item = document.getElementById(`hitem-${idx}`);
+            const existing = item.querySelector('.history-audio-wrap');
+            if (existing) { existing.remove(); return; }
+            const wrap = document.createElement('div');
+            wrap.className = 'history-audio-wrap';
+            wrap.innerHTML = `<audio controls autoplay src="${audioUrl}"></audio>`;
+            item.appendChild(wrap);
+        }
+
         // 页面加载时执行
         document.addEventListener('DOMContentLoaded', function() {
             checkAIStatus();
+            loadVoices();
+            loadHistory();
         });
     </script>
 </body>

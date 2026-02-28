@@ -8,9 +8,11 @@ An AI-powered podcast generation service built on Node.js. It uses [OpenRouter](
 
 - **AI Script Generation** — Automatically write podcast scripts via OpenRouter (Qwen3-32B by default)
 - **Streaming Generation** — Real-time script streaming with Server-Sent Events
+- **Streaming Synthesis Progress** — Real-time dialogue audio synthesis progress via SSE
 - **Single & Dialogue Mode** — Solo host or two-host conversation formats
 - **11 Voice Options** — Mandarin, Cantonese, and English voices
 - **Batch Generation** — Generate multiple podcasts in one request
+- **History & Playback** — Built-in generation history with inline audio preview
 - **Web UI** — Built-in frontend for easy use without any API calls
 
 ## Tech Stack
@@ -101,9 +103,11 @@ Returns an MP3 audio file.
 | `POST` | `/api/podcast/generate-script` | Generate script only |
 | `POST` | `/api/podcast/generate-script-stream` | Stream script generation (SSE) |
 | `POST` | `/api/podcast/synthesize-audio` | Synthesize audio from a given script |
+| `POST` | `/api/podcast/synthesize-audio-stream` | Stream dialogue synthesis progress (SSE) |
 | `POST` | `/api/podcast/batch` | Batch generate multiple podcasts |
 | `GET`  | `/api/podcast/history` | Get generation history |
-| `GET`  | `/api/podcast/download/:type/:filename` | Download audio or script file |
+| `GET`  | `/api/podcast/download/:type/:filename` | Download audio or script file (API path) |
+| `GET`  | `/download/:type/:filename` | Download audio or script file (web/UI path) |
 
 **POST `/api/podcast/generate`**
 

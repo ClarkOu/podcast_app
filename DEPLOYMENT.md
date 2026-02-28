@@ -48,9 +48,9 @@ git push -u origin main
 ```
 
 #### 2. 准备环境变量
-复制 `.env.example` 为 `.env.production`，填入真实密钥：
+复制 `.env.example` 为 `.env`，填入真实密钥：
 ```bash
-cp .env.example .env.production
+cp .env.example .env
 ```
 
 ### 免费平台部署（Railway）
@@ -69,11 +69,12 @@ git push
 4. 选择您的仓库
 5. 添加环境变量：
    - `VOLCENGINE_TTS_APP_ID`
-   - `VOLCENGINE_TTS_ACCESS_TOKEN` 
-   - `VOLCENGINE_TTS_CLUSTER`
-   - `VOLCENGINE_TTS_SECRET_KEY`
+    - `VOLCENGINE_TTS_ACCESS_TOKEN`
+    - `VOLCENGINE_TTS_RESOURCE_ID`
+    - `VOLCENGINE_TTS_VOICE_TYPE`（可选）
    - `OPENROUTER_API_KEY`
    - `OPENROUTER_MODEL`
+    - `PORT`
 6. 点击部署
 
 #### 3. 获取访问地址
@@ -118,7 +119,10 @@ nano /opt/podcast-app/.env
 # 填入真实的API密钥
 VOLCENGINE_TTS_APP_ID=你的实际ID
 VOLCENGINE_TTS_ACCESS_TOKEN=你的实际Token
-# ... 其他配置
+VOLCENGINE_TTS_RESOURCE_ID=seed-tts-1.0
+OPENROUTER_API_KEY=你的实际Key
+OPENROUTER_MODEL=qwen/qwen3-32b:free
+PORT=3000
 ```
 
 #### 5. 启动服务
@@ -229,6 +233,7 @@ netstat -tulpn | grep 3000
 #### 2. API密钥错误
 - 检查 `.env` 文件配置
 - 确认火山方舟和OpenRouter密钥有效
+- 确认使用的是 `VOLCENGINE_TTS_RESOURCE_ID`，而不是旧字段 `VOLCENGINE_TTS_CLUSTER`
 
 #### 3. 内存不足
 - 升级服务器配置

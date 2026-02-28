@@ -44,10 +44,10 @@ app.get('/api/test', async (req, res) => {
     console.log('🔍 开始测试API连接...');
     
     // 检查环境变量
-    if (!process.env.VOLCENGINE_TTS_APP_ID || !process.env.VOLCENGINE_TTS_ACCESS_TOKEN || !process.env.VOLCENGINE_TTS_CLUSTER) {
+    if (!process.env.VOLCENGINE_TTS_APP_ID || !process.env.VOLCENGINE_TTS_ACCESS_TOKEN || !process.env.VOLCENGINE_TTS_RESOURCE_ID) {
       return res.status(400).json({
         success: false,
-        error: '请在.env文件中配置VOLCENGINE_TTS_APP_ID、VOLCENGINE_TTS_ACCESS_TOKEN和VOLCENGINE_TTS_CLUSTER'
+        error: '请在.env文件中配置VOLCENGINE_TTS_APP_ID、VOLCENGINE_TTS_ACCESS_TOKEN和VOLCENGINE_TTS_RESOURCE_ID'
       });
     }
 
@@ -249,6 +249,18 @@ app.post('/api/podcast/synthesize-audio', async (req, res) => {
     
     await fs.writeFile(audioPath, audioResult.audio);
     await fs.writeFile(scriptPath, script, 'utf8');
+
+    const metadata = {
+      topic: topic || '播客',
+      generatedAt: new Date().toISOString(),
+      audioPath,
+      scriptPath,
+      audioSize: audioResult.audio.length,
+      podcastMode: podcastMode || 'single',
+      generatedBy: podcastMode === 'dialogue' ? 'dialogue-synthesis' : 'single-synthesis'
+    };
+    const metadataPath = path.join(podcastGenerator.outputDir, `${sanitizedTopic}_metadata.json`);
+    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
     
     console.log(`🎵 音频已保存：${audioPath}`);
     
@@ -258,10 +270,11 @@ app.post('/api/podcast/synthesize-audio', async (req, res) => {
       data: {
         audioPath: audioPath,
         scriptPath: scriptPath,
+        metadataPath: metadataPath,
         audioSize: audioResult.audio.length,
         topic: topic || '播客',
         podcastMode: podcastMode || 'single',
-        generatedAt: new Date().toISOString()
+        generatedAt: metadata.generatedAt
       }
     });
     
@@ -501,6 +514,83 @@ app.post('/api/podcast/generate-script-stream', async (req, res) => {
       type: 'error', 
       error: error.message 
     })}\n\n`);
+    res.end();
+  }
+});
+
+// 路由：双人对话音频合成（SSE进度推送）
+app.post('/api/podcast/synthesize-audio-stream', async (req, res) => {
+  const { script, topic, voiceA, voiceB, speedRatio, volumeRatio } = req.body;
+
+  if (!script) {
+    return res.status(400).json({ success: false, error: '请提供播客脚本' });
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*'
+  });
+
+  const send = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  try {
+    const segments = parseDialogueScript(script);
+    if (segments.length === 0) {
+      send({ type: 'error', error: '无法解析双人对话脚本' });
+      return res.end();
+    }
+
+    const total = segments.length;
+    send({ type: 'start', total });
+
+    const audioChunks = [];
+
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+      const voiceType = segment.speaker === 'hostA'
+        ? (voiceA || 'zh_female_linjia_mars_bigtts')
+        : (voiceB || 'ICL_zh_male_cixingnansang_tob');
+
+      send({ type: 'progress', current: i + 1, total, speaker: segment.speaker });
+
+      const audioResult = await ttsClient.synthesize(segment.content, {
+        voiceType,
+        speedRatio: parseFloat(speedRatio) || 1.0,
+        volumeRatio: parseFloat(volumeRatio) || 1.0
+      });
+
+      if (!audioResult.success) {
+        send({ type: 'error', error: `第 ${i + 1} 段音频合成失败` });
+        return res.end();
+      }
+
+      audioChunks.push(audioResult.audio);
+    }
+
+    const mergedAudio = Buffer.concat(audioChunks);
+    const sanitizedTopic = topic ? podcastGenerator.sanitizeFilename(topic) : 'podcast_' + Date.now();
+    const audioPath = path.join(podcastGenerator.outputDir, `${sanitizedTopic}_audio.mp3`);
+    const scriptPath = path.join(podcastGenerator.outputDir, `${sanitizedTopic}_script.txt`);
+
+    await fs.writeFile(audioPath, mergedAudio);
+    await fs.writeFile(scriptPath, script, 'utf8');
+
+    send({
+      type: 'complete',
+      data: {
+        topic: topic || '播客',
+        audioSize: mergedAudio.length,
+        generatedAt: new Date().toISOString(),
+        podcastMode: 'dialogue'
+      }
+    });
+
+    res.end();
+  } catch (error) {
+    console.error('双人对话SSE合成失败:', error);
+    send({ type: 'error', error: error.message });
     res.end();
   }
 });

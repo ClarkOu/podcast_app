@@ -8,9 +8,11 @@
 
 - **AI 脚本生成** — 通过 OpenRouter（默认使用 Qwen3-32B）自动撰写播客脚本
 - **流式生成** — 基于 SSE 的实时脚本流式输出
+- **流式合成进度** — 双人模式下基于 SSE 的实时音频合成进度
 - **单人 & 双人模式** — 支持单主持人或双主持人对话两种格式
 - **11 种音色** — 普通话、粤语及英文音色
 - **批量生成** — 一次请求生成多期播客
+- **历史记录与回放** — 内置生成历史列表，支持页面内音频试听
 - **Web 界面** — 内置前端，无需手动调用 API
 
 ## 技术栈
@@ -101,9 +103,11 @@ npm run dev
 | `POST` | `/api/podcast/generate-script` | 仅生成脚本 |
 | `POST` | `/api/podcast/generate-script-stream` | 流式生成脚本（SSE） |
 | `POST` | `/api/podcast/synthesize-audio` | 根据脚本合成音频 |
+| `POST` | `/api/podcast/synthesize-audio-stream` | 流式返回双人合成进度（SSE） |
 | `POST` | `/api/podcast/batch` | 批量生成多期播客 |
 | `GET`  | `/api/podcast/history` | 获取生成历史 |
-| `GET`  | `/api/podcast/download/:type/:filename` | 下载音频或脚本文件 |
+| `GET`  | `/api/podcast/download/:type/:filename` | 下载音频或脚本文件（API路径） |
+| `GET`  | `/download/:type/:filename` | 下载音频或脚本文件（Web页面路径） |
 
 **POST `/api/podcast/generate`**
 

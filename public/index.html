@@ -3,266 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>火山方舟语音合成测试</title>
+    <title>TTS 测试 — PodcastAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg:        #f1f5f9;
+            --surface:   #ffffff;
+            --border:    #e2e8f0;
+            --border-md: #cbd5e1;
+            --text:      #0f172a;
+            --text-2:    #475569;
+            --text-3:    #94a3b8;
+            --accent:    #7c3aed;
+            --accent-lt: #ede9fe;
+            --accent-dk: #5b21b6;
+            --cyan:      #06b6d4;
+            --green:     #10b981;
+            --green-lt:  #d1fae5;
+            --red:       #ef4444;
+            --red-lt:    #fee2e2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+            --shadow:    0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.04);
+            --radius-sm: 8px;
+            --radius:    12px;
+            --radius-lg: 16px;
         }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
         }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+        .nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px; height: 56px;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        
-        .header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none;
         }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .nav-logo .logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
         }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
+        .nav-link {
+            font-size: 13px; color: var(--text-2); text-decoration: none;
+            padding: 6px 14px; border-radius: 20px;
+            border: 1px solid var(--border); background: var(--surface);
+            transition: all .15s;
         }
-        
-        .content {
-            padding: 40px;
+        .nav-link:hover { border-color: var(--accent); color: var(--accent); }
+        .page { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+        .page-hero { margin-bottom: 24px; }
+        .page-hero h1 { font-size: 24px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 6px; }
+        .page-hero p { color: var(--text-2); font-size: 14px; }
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+            overflow: hidden; margin-bottom: 16px;
         }
-        
-        .test-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border-left: 5px solid #ff6b6b;
+        .card-header {
+            padding: 16px 20px 14px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px;
         }
-        
-        .test-section h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+        .card-header h2 { font-size: 14px; font-weight: 600; }
+        .card-body { padding: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-group label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 9px 12px;
+            background: var(--bg); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 14px; font-family: inherit;
+            color: var(--text); transition: border-color .15s, box-shadow .15s;
+            appearance: none; -webkit-appearance: none;
         }
-        
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124,58,237,.12); background: #fff;
+        }
+        .form-group textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+        .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 540px) { .param-grid { grid-template-columns: 1fr; } }
+        .range-wrap { display: flex; align-items: center; gap: 10px; }
+        .range-wrap input[type=range] {
+            flex: 1; padding: 0; height: 4px; background: var(--border);
+            border-radius: 4px; accent-color: var(--accent); cursor: pointer;
+            border: none; box-shadow: none;
+        }
+        .range-wrap input[type=range]:focus { outline: none; box-shadow: none; }
+        .range-val { font-size: 13px; font-weight: 600; color: var(--accent); min-width: 28px; text-align: right; }
         .btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px 10px 10px 0;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px 20px; border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 14px; font-weight: 600;
+            cursor: pointer; border: none; transition: all .15s;
         }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(238, 90, 36, 0.3);
-        }
-        
-        .btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e8ed;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #ff6b6b;
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 3px rgba(124,58,237,.3); }
+        .btn-primary:hover { background: var(--accent-dk); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,58,237,.4); }
+        .btn-primary:disabled { background: var(--border-md); color: var(--text-3); box-shadow: none; transform: none; cursor: not-allowed; }
+        .btn-ghost { background: transparent; color: var(--text-2); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
         .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-weight: 500;
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 16px; border-radius: var(--radius-sm);
+            font-size: 13px; margin-top: 14px; line-height: 1.5;
         }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status.loading {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
+        .status.success { background: var(--green-lt); border: 1px solid #bbf7d0; color: #065f46; }
+        .status.error   { background: var(--red-lt);   border: 1px solid #fca5a5; color: #991b1b; }
+        .status.loading { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
         .audio-player {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #dee2e6;
+            margin-top: 14px; padding: 16px;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border: 1.5px solid #bbf7d0; border-radius: var(--radius);
         }
-        
-        audio {
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        .parameter-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
+        .audio-player h4 { font-size: 13px; font-weight: 600; color: #065f46; margin-bottom: 10px; }
+        .audio-player audio { width: 100%; border-radius: 6px; }
+        .audio-player p { font-size: 12px; color: var(--text-3); margin-top: 8px; }
         .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            display: inline-block; width: 13px; height: 13px;
+            border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+            border-radius: 50%; animation: spin .7s linear infinite;
+            vertical-align: text-bottom; margin-right: 2px;
         }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .emoji {
-            font-size: 1.2em;
-            margin-right: 8px;
-        }
+        .hidden { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎙️ 火山方舟TTS测试</h1>
-            <p>测试你的API密钥和语音合成功能</p>
-        </div>
-        
-        <div class="content">
-            <!-- API连接测试 -->
-            <div class="test-section">
-                <h3><span class="emoji">🔍</span>API连接测试</h3>
-                <p>首先测试你的API密钥是否配置正确</p>
-                <button class="btn" onclick="testConnection()" id="testBtn">测试连接</button>
-                <div id="connectionStatus"></div>
-            </div>
-            
-            <!-- 语音合成测试 -->
-            <div class="test-section">
-                <h3><span class="emoji">🎭</span>语音合成测试</h3>
-                
-                <div class="form-group">
-                    <label for="textInput">要合成的文本:</label>
-                    <textarea id="textInput" placeholder="输入要转换为语音的文本内容...">你好，这是火山方舟语音合成测试。我是一个智能语音助手，很高兴为你服务！</textarea>
-                </div>
-                
-                <div class="parameter-group">
-                    <div class="form-group">
-                        <label for="voiceSelect">音色选择:</label>
-                        <select id="voiceSelect">
-                            <option value="zh_female_linjia_mars_bigtts">林佳女声</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="speedRange">语速: <span id="speedValue">1.0</span></label>
-                        <input type="range" id="speedRange" min="0.5" max="2.0" step="0.1" value="1.0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="volumeRange">音量: <span id="volumeValue">1.0</span></label>
-                        <input type="range" id="volumeRange" min="0.1" max="2.0" step="0.1" value="1.0">
-                    </div>
-                </div>
-                
-                <button class="btn" onclick="synthesizeSpeech()" id="synthesizeBtn">
-                    <span class="emoji">🎙️</span>开始合成
-                </button>
-                
-                <div id="synthesizeStatus"></div>
-                <div id="audioPlayer" class="audio-player hidden">
-                    <h4>🎵 生成的音频:</h4>
-                    <audio controls id="audio"></audio>
-                    <p style="margin-top: 10px; color: #6c757d; font-size: 0.9em;">
-                        音频已生成，你可以播放试听效果
-                    </p>
-                </div>
-            </div>
-            
-            <!-- 快速测试按钮 -->
-            <div class="test-section">
-                <h3><span class="emoji">⚡</span>快速测试</h3>
-                <p>一键测试不同的音色和参数组合</p>
-                <button class="btn" onclick="quickTest('zh_female_linjia_mars_bigtts')">林佳女声测试</button>
-                <button class="btn" onclick="quickTestSpeed()">语速测试</button>
-            </div>
 
-            <!-- 快速导航 -->
-            <div class="test-section">
-                <h3><span class="emoji">🚀</span>功能导航</h3>
-                <p>探索更多AI语音功能</p>
-                <button class="btn" onclick="window.open('/podcast.html', '_blank')">
-                    <span class="emoji">🎙️</span>播客生成器
-                </button>
-                <button class="btn" onclick="testConnection()">基础TTS测试</button>
+<nav class="nav">
+    <a href="/" class="nav-logo">
+        <div class="logo-icon">🎙</div>
+        <span>PodcastAI</span>
+    </a>
+    <a href="/new-podcast.html" class="nav-link">✨ 播客生成器</a>
+</nav>
+
+<div class="page">
+
+    <div class="page-hero">
+        <h1>TTS 测试工具</h1>
+        <p>测试火山方舟 API 连接与语音合成效果</p>
+    </div>
+
+    <!-- API 连接测试 -->
+    <div class="card">
+        <div class="card-header"><h2>🔍 API 连接测试</h2></div>
+        <div class="card-body">
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">验证 API 密钥与 WebSocket 连接是否正常</p>
+            <button class="btn btn-primary" onclick="testConnection()" id="testBtn">测试连接</button>
+            <div id="connectionStatus"></div>
+        </div>
+    </div>
+
+    <!-- 语音合成 -->
+    <div class="card">
+        <div class="card-header"><h2>🎭 语音合成测试</h2></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="textInput">合成文本</label>
+                <textarea id="textInput" placeholder="输入要转换为语音的文本内容…">你好，这是火山方舟语音合成测试。我是一个智能语音助手，很高兴为你服务！</textarea>
+            </div>
+            <div class="param-grid" style="margin-bottom:16px">
+                <div class="form-group" style="margin-bottom:0">
+                    <label for="voiceSelect">音色</label>
+                    <select id="voiceSelect"><option disabled>加载中...</option></select>
+                </div>
+                <div></div>
+                <div class="form-group" style="margin-bottom:0">
+                    <label>语速</label>
+                    <div class="range-wrap">
+                        <input type="range" id="speedRange" min="0.5" max="2.0" step="0.1" value="1.0">
+                        <span class="range-val" id="speedValue">1.0</span>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                    <label>音量</label>
+                    <div class="range-wrap">
+                        <input type="range" id="volumeRange" min="0.1" max="2.0" step="0.1" value="1.0">
+                        <span class="range-val" id="volumeValue">1.0</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="synthesizeSpeech()" id="synthesizeBtn">🎙️ 开始合成</button>
+            <div id="synthesizeStatus"></div>
+            <div id="audioPlayer" class="audio-player hidden">
+                <h4>🎵 生成的音频</h4>
+                <audio controls id="audio"></audio>
+                <p>音频已生成，可以播放试听</p>
             </div>
         </div>
     </div>
+
+    <!-- 快速测试 -->
+    <div class="card">
+        <div class="card-header"><h2>⚡ 快速测试</h2></div>
+        <div class="card-body">
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">一键测试不同音色和参数组合</p>
+            <div class="btn-row">
+                <button class="btn btn-ghost" onclick="quickTest('zh_female_linjia_mars_bigtts')">林佳女声测试</button>
+                <button class="btn btn-ghost" onclick="quickTestSpeed()">语速测试</button>
+            </div>
+        </div>
+    </div>
+
+</div>
 
     <script>
         // 更新滑块显示值
@@ -387,9 +347,28 @@
             await synthesizeSpeech();
         }
 
-        // 页面加载时自动测试连接
+        // 从 /api/voices 动态加载音色列表
+        async function loadVoices() {
+            try {
+                const response = await fetch('/api/voices');
+                const result = await response.json();
+                if (!result.success || !result.voices.length) return;
+
+                const langLabel = { 'zh-CN': '普通话', 'zh-YUE': '粤语', 'en-US': '英文' };
+                const el = document.getElementById('voiceSelect');
+                el.innerHTML = result.voices.map(v => {
+                    const lang = langLabel[v.language] || v.language;
+                    return `<option value="${v.id}">${v.name}（${lang}）</option>`;
+                }).join('');
+            } catch (error) {
+                console.error('加载音色列表失败:', error);
+            }
+        }
+
+        // 页面加载时自动测试连接并加载音色
         window.addEventListener('load', function() {
             setTimeout(testConnection, 1000);
+            loadVoices();
         });
     </script>
 </body>
