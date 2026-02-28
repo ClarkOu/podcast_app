@@ -1,160 +1,180 @@
-# 火山方舟语音合成播客生成器
+# 🎙️ Podcast Generator
 
-[![Build Status](https://github.com/ClarkOu/podcast_app/actions/workflows/deploy.yml/badge.svg)](https://github.com/ClarkOu/podcast_app/actions)
-[![Docker](https://img.shields.io/docker/v/clarkou/podcast_app?label=Docker)](https://hub.docker.com/r/clarkou/podcast_app)
+**English** | [简体中文](./README.zh-CN.md)
 
-基于豆包火山方舟TTS的智能播客生成平台，支持AI内容生成和语音合成。
+An AI-powered podcast generation service built on Node.js. It uses [OpenRouter](https://openrouter.ai/) to generate scripts and [Volcengine Seed-TTS](https://www.volcengine.com/docs/6561/1719100) (V3 API) for high-quality speech synthesis.
 
-## 功能特性
+## Features
 
-- 🎙️ **智能播客生成**：支持AI和模板两种内容生成方式
-- 🤖 **AI内容生成**：集成OpenRouter大模型，生成高质量播客脚本
-- 🎵 **高质量语音合成**：基于火山方舟TTS引擎
-- 🎨 **多种播客风格**：信息性、对话式、教育性
-- ⚡ **实时流式处理**：WebSocket协议，快速响应
-- 📱 **现代Web界面**：直观易用的播客生成界面
-- 🔄 **批量生成**：支持多主题批量处理
-- � **历史记录**：生成历史查看和下载
-- �🔧 **灵活配置**：支持多种音色、语速、音量调节
+- **AI Script Generation** — Automatically write podcast scripts via OpenRouter (Qwen3-32B by default)
+- **Streaming Generation** — Real-time script streaming with Server-Sent Events
+- **Single & Dialogue Mode** — Solo host or two-host conversation formats
+- **11 Voice Options** — Mandarin, Cantonese, and English voices
+- **Batch Generation** — Generate multiple podcasts in one request
+- **Web UI** — Built-in frontend for easy use without any API calls
 
-## 内容生成方式
+## Tech Stack
 
-### 🤖 AI生成（推荐）
-- 使用OpenRouter API调用大模型
-- 支持Llama 3.1、GPT、Claude等知名模型
-- 根据主题智能生成相关、准确的内容
-- 自然流畅，适合口播
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Node.js + Express |
+| TTS | Volcengine Seed-TTS V3 (WebSocket) |
+| AI | OpenRouter API / Qwen3-32B |
+| SDK | openai ^5.7.0, ws ^8.18.2 |
 
-### 📝 模板生成（默认）
-- 内置JavaScript模板
-- 无需额外配置，开箱即用
-- 结构化内容，生成稳定
+## Prerequisites
 
-## 快速开始
+- Node.js 18+
+- A [Volcengine](https://www.volcengine.com/) account with TTS enabled
+- An [OpenRouter](https://openrouter.ai/) API key (optional, for AI script generation)
 
-### 1. 安装依赖
+## Getting Started
+
+**1. Clone and install**
 
 ```bash
+git clone https://github.com/ClarkOu/podcast_app.git
+cd podcast_app
 npm install
 ```
 
-### 2. 配置环境变量
-
-### 3. 启动服务
+**2. Configure environment**
 
 ```bash
+cp .env.example .env
+```
+
+Edit `.env` and fill in your credentials:
+
+```env
+VOLCENGINE_TTS_APP_ID=your_app_id
+VOLCENGINE_TTS_ACCESS_TOKEN=your_access_token
+VOLCENGINE_TTS_RESOURCE_ID=seed-tts-1.0
+
+OPENROUTER_API_KEY=your_openrouter_api_key   # optional
+OPENROUTER_MODEL=qwen/qwen3-32b:free
+
+PORT=3000
+```
+
+**3. Run**
+
+```bash
+# Production
 npm start
+
+# Development (auto-reload)
+npm run dev
 ```
 
-服务将在 http://localhost:3002 启动。
+Open `http://localhost:3000` in your browser.
 
-### 4. 访问应用
+## API Reference
 
-- **主页**: http://localhost:3002 - TTS测试界面
-- **播客制作**: http://localhost:3002/new-podcast.html - 智能播客生成页面
+### TTS
 
-## 🎯 最新更新
-- ✅ 已配置GitHub Actions自动化部署
-- ✅ 已配置Docker Hub镜像自动构建
-- **播客生成器**: http://localhost:3002/podcast.html - 播客生成界面
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/tts` | Synthesize text to speech |
+| `GET` | `/api/voices` | List available voices |
 
-### 5. 测试功能
+**POST `/api/tts`**
 
-```bash
-# 测试TTS基础功能
-npm run test
-
-# 测试AI播客生成功能
-node src/test-ai.js
-```
-
-## 使用指南
-
-### Web界面使用
-
-1. **播客生成**
-   - 访问播客生成器页面
-   - 输入播客主题
-   - 选择是否使用AI生成（需配置API Key）
-   - 调整播客风格、时长、段落数等参数
-   - 设置语音参数（音色、语速、音量）
-   - 点击生成播客
-
-2. **批量生成**
-   - 切换到"批量生成"标签
-   - 添加多个播客主题
-   - 统一设置参数
-   - 批量生成所有播客
-
-3. **历史记录**
-   - 查看已生成的播客
-   - 下载音频和脚本文件
-   - 管理生成历史
-
-### API接口
-
-#### 检查AI配置状态
-```bash
-GET /api/ai/status
-```
-
-#### 生成播客
-```bash
-POST /api/podcast/generate
-```
-
-**请求参数：**
 ```json
 {
-  "topic": "人工智能的发展趋势",
-  "style": "conversational",        // informative, conversational, educational
-  "duration": "medium",             // short, medium, long
-  "segments": 3,                    // 内容段落数
-  "useAI": true,                    // 是否使用AI生成
-  "voiceType": "zh_female_linjia_mars_bigtts",
-  "speedRatio": 1.0,
-  "volumeRatio": 1.0
-}
-```
-
-#### 批量生成播客
-```bash
-POST /api/podcast/batch
-```
-
-#### TTS语音合成
-```bash
-POST /api/tts
-```
-{
-  "text": "要合成的文本内容",
-  "voice": "BV700_streaming",
+  "text": "Hello, welcome to my podcast.",
+  "voice": "zh_female_linjia_mars_bigtts",
   "speed": 1.0,
   "volume": 1.0
 }
 ```
 
-**响应：**
-返回生成的音频文件
+Returns an MP3 audio file.
 
-## 支持的音色
+---
 
-- `BV700_streaming`: 通用女声
-- `BV701_streaming`: 通用男声  
-- `BV009_streaming`: 情感女声
-- `BV102_streaming`: 温柔女声
-- `BV103_streaming`: 成熟男声
-- `BV104_streaming`: 温暖男声
+### Podcast
 
-## 技术栈
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/podcast/generate` | Generate script + audio in one step |
+| `POST` | `/api/podcast/generate-script` | Generate script only |
+| `POST` | `/api/podcast/generate-script-stream` | Stream script generation (SSE) |
+| `POST` | `/api/podcast/synthesize-audio` | Synthesize audio from a given script |
+| `POST` | `/api/podcast/batch` | Batch generate multiple podcasts |
+| `GET`  | `/api/podcast/history` | Get generation history |
+| `GET`  | `/api/podcast/download/:type/:filename` | Download audio or script file |
 
-- Node.js + Express
-- WebSocket连接
-- 火山方舟TTS WebSocket API
-- HTML/CSS/JavaScript
+**POST `/api/podcast/generate`**
 
-## 注意事项
+```json
+{
+  "topic": "The Future of AI",
+  "style": "informative",
+  "duration": "medium",
+  "segments": 3,
+  "voiceType": "zh_female_linjia_mars_bigtts",
+  "speedRatio": 1.0,
+  "volumeRatio": 1.0,
+  "useAI": true
+}
+```
 
-1. 请确保你的火山方舟账户有足够的调用额度
-2. API密钥请妥善保管，不要提交到代码仓库
-3. 生成的音频文件会临时保存在 `temp` 目录下
+**POST `/api/podcast/synthesize-audio` — Dialogue Mode**
+
+```json
+{
+  "script": "主持人A: ...\n主持人B: ...",
+  "topic": "Tech Weekly",
+  "podcastMode": "dialogue",
+  "voiceA": "zh_female_linjia_mars_bigtts",
+  "voiceB": "ICL_zh_male_cixingnansang_tob"
+}
+```
+
+---
+
+### Utilities
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/test` | Test TTS connection |
+| `GET` | `/api/ai/status` | Check AI configuration status |
+
+## Available Voices
+
+| ID | Name | Gender | Language |
+|----|------|--------|----------|
+| `zh_female_linjia_mars_bigtts` | 林佳 | Female | zh-CN |
+| `zh_female_shuangkuaisisi_moon_bigtts` | 爽快思思 | Female | zh-CN |
+| `zh_female_xiaoyue_mars_bigtts` | 晓悦 | Female | zh-CN |
+| `zh_female_qingxin_mars_bigtts` | 清新小妹 | Female | zh-CN |
+| `zh_female_cancan_mars_bigtts` | 灿灿 | Female | zh-CN |
+| `zh_male_zhubo_mars_bigtts` | 专业主播 | Male | zh-CN |
+| `zh_male_sunwukong_mars_bigtts` | 孙悟空 | Male | zh-CN |
+| `ICL_zh_male_cixingnansang_tob` | 磁性男声 | Male | zh-CN |
+| `zh_female_yueyue_mars_bigtts` | 粤语悦悦 | Female | zh-YUE |
+| `en_female_sarah_mars_bigtts` | Sarah | Female | en-US |
+| `en_male_adam_mars_bigtts` | Adam | Male | en-US |
+
+## Project Structure
+
+```
+podcast_app/
+├── src/
+│   ├── index.js                    # Express server & API routes
+│   ├── podcast-generator.js        # Podcast orchestration logic
+│   ├── openrouter-client.js        # OpenRouter AI client
+│   └── volcengine-tts-websocket.js # Volcengine Seed-TTS V3 WebSocket client
+├── public/
+│   ├── index.html                  # Main web UI
+│   └── new-podcast.html            # Podcast creation UI
+├── output/                         # Generated audio & scripts
+├── temp/                           # Temporary TTS files
+├── .env.example
+└── package.json
+```
+
+## License
+
+MIT

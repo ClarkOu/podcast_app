@@ -1,7 +1,7 @@
 const OpenAI = require('openai');
 
 class OpenRouterClient {
-  constructor(apiKey, model = 'meta-llama/llama-3.1-8b-instruct:free') {
+  constructor(apiKey, model = 'qwen/qwen3-32b:free') {
     this.client = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
       apiKey: apiKey,

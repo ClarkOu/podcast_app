@@ -22,13 +22,13 @@ fs.ensureDirSync(tempDir);
 const ttsClient = new VolcengineTTSWebSocketClient(
   process.env.VOLCENGINE_TTS_APP_ID,
   process.env.VOLCENGINE_TTS_ACCESS_TOKEN,
-  process.env.VOLCENGINE_TTS_CLUSTER
+  process.env.VOLCENGINE_TTS_RESOURCE_ID
 );
 
 // 初始化播客生成器
 const openRouterConfig = {
   apiKey: process.env.OPENROUTER_API_KEY,
-  model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.1-8b-instruct:free'
+  model: process.env.OPENROUTER_MODEL || 'qwen/qwen3-32b:free'
 };
 
 const podcastGenerator = new PodcastGenerator(ttsClient, openRouterConfig);
@@ -82,7 +82,7 @@ app.get('/api/ai/status', (req, res) => {
     success: true,
     data: {
       aiEnabled: hasApiKey,
-      model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.1-8b-instruct:free',
+      model: process.env.OPENROUTER_MODEL || 'qwen/qwen3-32b:free',
       message: hasApiKey ? 'AI功能已启用' : '需要配置OPENROUTER_API_KEY以启用AI功能'
     }
   });
